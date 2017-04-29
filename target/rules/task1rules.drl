@@ -22,7 +22,7 @@ declare Tick
 end
 
 
-rule "ActiveRoute_rule"
+/*rule "ActiveRoute_rule"
 	salience XXX
     when
         exists TaxiLog($pickupCell : pickup_cell , $dropoffCell : dropoff_cell) over window:time(30m)
@@ -31,7 +31,7 @@ rule "ActiveRoute_rule"
 end
 
 
-/*
+
 rule "TaxiLog_rule"
 
     when
@@ -63,7 +63,7 @@ rule "TaxiLog_decrease"
         
 
 end
-*/
+
 rule "TaxiLog_rule2"
 
     when
@@ -97,5 +97,4 @@ rule "TaxiLog_decrease2"
         
 
 end
-
-
+*/
