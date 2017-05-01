@@ -31,24 +31,26 @@ end
 end
 
 
-
+*/
 rule "TaxiLog_rule"
 
     when
-        $tlog: TaxiLog($pickupCell : pickup_cell , $dropoffCell : dropoff_cell , $dropoffTime : dropoff_datetime   )
+        $tlog: TaxiLog(!processed ,$pickupCell : pickup_cell , $dropoffCell : dropoff_cell , $dropoffTime : dropoff_datetime)
         $countOfRoutes : java.lang.Number(doubleValue > 0) from accumulate 
         			( TaxiLog( pickup_cell == $pickupCell , dropoff_cell == $dropoffCell, pickup_cell  != null, dropoff_cell != null) over window:time(30m),
         			count()
         			)
     then
+    	$tlog.setProcessed(true); 
     	
-    	mostFrequentRoutes.add(new Route($pickupCell, $dropoffCell, $dropoffTime.getTime(), (java.lang.Long) $countOfRoutes));
+    	mostFrequentRoutes.add(new Route($pickupCell, $dropoffCell, $dropoffTime, (java.lang.Long) $countOfRoutes));
+    	//modify($tlog);
     	
        
         
 
 end
-
+/*
 rule "TaxiLog_decrease"
 
     when

@@ -1,19 +1,18 @@
 package onlab.event;
 
 import java.math.BigDecimal;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.logging.Logger;
 
 import onlab.positioning.Cell;
 import onlab.positioning.Coordinate;
+
 public class TaxiLog {
 
 	private String medallion;
 	private String hack_license;
-	private Calendar pickup_datetime;
-	private Calendar dropoff_datetime;
+	private Date pickup_datetime;
+	private Date dropoff_datetime;
 	private long trip_time_in_secs;
 	private double trip_distance;
 	private Coordinate pickup_coordinate;
@@ -28,12 +27,10 @@ public class TaxiLog {
 	private Cell pickup_cell;
 	private Cell dropoff_cell;
 	private boolean isProcessed = false;
-		
 	
 
 	private static final Logger LOGGER = Logger.getLogger(TaxiLog.class.getName());
 
-	
 	public String getMedallion() {
 		return medallion;
 	}
@@ -51,18 +48,18 @@ public class TaxiLog {
 	}
 
 	public Date getPickup_datetime() {
-		return pickup_datetime.getTime();
+		return pickup_datetime;
 	}
 
-	public void setPickup_datetime(Calendar pickup_datetime) {
+	public void setPickup_datetime(Date pickup_datetime) {
 		this.pickup_datetime = pickup_datetime;
 	}
 
 	public Date getDropoff_datetime() {
-		return dropoff_datetime.getTime();
+		return dropoff_datetime;
 	}
 
-	public void setDropoff_datetime(Calendar dropoff_datetime) {
+	public void setDropoff_datetime(Date dropoff_datetime) {
 		this.dropoff_datetime = dropoff_datetime;
 	}
 
@@ -81,8 +78,6 @@ public class TaxiLog {
 	public void setTrip_distance(double trip_distance) {
 		this.trip_distance = trip_distance;
 	}
-
-	
 
 	public Coordinate getPickup_coordinate() {
 		return pickup_coordinate;
@@ -152,9 +147,6 @@ public class TaxiLog {
 		return payment_type;
 	}
 
-	
-	
-
 	public Cell getPickup_cell() {
 		return pickup_cell;
 	}
@@ -179,10 +171,7 @@ public class TaxiLog {
 			this.payment_type = payment_type;
 		}
 
-	
 	}
-	
-	
 
 	public boolean isProcessed() {
 		return isProcessed;
@@ -191,13 +180,5 @@ public class TaxiLog {
 	public void setProcessed(boolean isProcessed) {
 		this.isProcessed = isProcessed;
 	}
-
-	
-	
-	
-	
-
-	
-	
 
 }

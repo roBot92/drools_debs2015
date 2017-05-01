@@ -109,7 +109,7 @@ public class DataFileParser {
 					date = SIMPLE_DATE_FORMAT.parse(line[2]);
 					calendar = Calendar.getInstance();
 					calendar.setTime(date);
-					taxiLog.setPickup_datetime(calendar);
+					taxiLog.setPickup_datetime(calendar.getTime());
 				} catch (ParseException e) {
 					LOGGER.warning("Wrong pickup dateformat. Line: " + counter);
 				}
@@ -118,7 +118,7 @@ public class DataFileParser {
 					date = SIMPLE_DATE_FORMAT.parse(line[3]);
 					calendar = Calendar.getInstance();
 					calendar.setTime(date);
-					taxiLog.setDropoff_datetime(calendar);
+					taxiLog.setDropoff_datetime(calendar.getTime());
 
 					if (START_TIME_IN_MILLISECONDS == 0) {
 						START_TIME_IN_MILLISECONDS = calendar.getTimeInMillis();
@@ -200,7 +200,7 @@ public class DataFileParser {
 				date = SIMPLE_DATE_FORMAT.parse(line[2]);
 				calendar = Calendar.getInstance();
 				calendar.setTime(date);
-				taxiLog.setPickup_datetime(calendar);
+				taxiLog.setPickup_datetime(calendar.getTime());
 			} catch (ParseException e) {
 				LOGGER.warning("Wrong pickup dateformat. HackLicense:" + line[1] + " Dropoff datetime:" + line[3]);
 				return null;
@@ -210,7 +210,7 @@ public class DataFileParser {
 				date = SIMPLE_DATE_FORMAT.parse(line[3]);
 				calendar = Calendar.getInstance();
 				calendar.setTime(date);
-				taxiLog.setDropoff_datetime(calendar);
+				taxiLog.setDropoff_datetime(calendar.getTime());
 
 				if (START_TIME_IN_MILLISECONDS == 0) {
 					START_TIME_IN_MILLISECONDS = calendar.getTimeInMillis();
