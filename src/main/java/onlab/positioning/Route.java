@@ -43,7 +43,6 @@ public class Route implements Comparable<Route> {
 		this.frequency = frequency;
 	}
 
-	
 	public Date getLastDropoffTime() {
 		return lastDropoffTime;
 	}
@@ -51,10 +50,6 @@ public class Route implements Comparable<Route> {
 	public void setLastDropoffTime(Date lastDropoffTime) {
 		this.lastDropoffTime = lastDropoffTime;
 	}
-
-
-
-	
 
 	@Override
 	public int hashCode() {
@@ -98,14 +93,16 @@ public class Route implements Comparable<Route> {
 
 	@Override
 	public int compareTo(Route r) {
+		if (this.equals(r)) {
+			return 0;
+		}
 		if (this.frequency < r.frequency) {
 			return 1;
 		} else if (this.frequency == r.frequency) {
 			int result = -(this.lastDropoffTime.compareTo(r.lastDropoffTime));
-			if(result == 0){
+			if (result == 0) {
 				return -1;
-			}
-			else{
+			} else {
 				return result;
 			}
 		} else {

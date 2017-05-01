@@ -12,7 +12,7 @@ import accumulate onlab.utility.MedianAccumulateFunction median
 declare TaxiLog
 @role(event)
 @timestamp(dropoff_datetime)
-@expires( 31m )
+//@expires( 32m )
 end
 
 declare Tick
@@ -41,7 +41,11 @@ rule "TaxiLog_rule"
         			count()
         			)
     then
-    	$tlog.setProcessed(true); 
+    
+    	
+    	 $tlog.setProcessed(true); 
+    	 update($tlog);
+    	
     	
     	mostFrequentRoutes.add(new Route($pickupCell, $dropoffCell, $dropoffTime, (java.lang.Long) $countOfRoutes));
     	//modify($tlog);
@@ -50,7 +54,7 @@ rule "TaxiLog_rule"
         
 
 end
-/*
+
 rule "TaxiLog_decrease"
 
     when
@@ -59,13 +63,13 @@ rule "TaxiLog_decrease"
     then
     
     	mostFrequentRoutes.decreaseRouteFrequency($tlog.getPickup_cell(), $tlog.getDropoff_cell());
-    	retract($tick);
+    	//retract($tick);
     	retract($tlog);	
        
         
 
 end
-
+/*
 rule "TaxiLog_rule2"
 
     when

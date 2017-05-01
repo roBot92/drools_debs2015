@@ -6,7 +6,7 @@ import java.util.TreeSet;
 import onlab.positioning.*;
 
 @SuppressWarnings("serial")
-public class FrequentRoutesToplistSet<T> extends TreeSet<Route> implements SortedSet<Route> {
+public class FrequentRoutesToplistSet<T extends Route> extends TreeSet<Route> implements SortedSet<Route> {
 
 	private static int MAX_ELEMENT_NUMBER = 10;
 
@@ -35,20 +35,24 @@ public class FrequentRoutesToplistSet<T> extends TreeSet<Route> implements Sorte
 	}
 
 	public void decreaseRouteFrequency(Cell pickupCell, Cell dropoffCell){
-		Route removable = null;
-		for(Route route : this){
+		Route decreasable = null;
+		Iterator<Route> iterator = this.iterator();
+		while(iterator.hasNext()){
+			Route route = iterator.next();
 			if(route.getPickup_Cell().equals(pickupCell) && route.getDropoff_Cell().equals(dropoffCell)){
-				route.setFrequency(route.getFrequency() - 1);
-				if(route.getFrequency() <= 0){
-					removable = route;
-				}
+				decreasable = route;
+				iterator.remove();
 				break;
 			}
 		}
 		
-		if(removable != null){
-			this.remove(removable);
+		if(decreasable != null){
+			decreasable.setFrequency(decreasable.getFrequency() - 1);
+			if(decreasable.getFrequency() > 0){
+				this.add(decreasable);
+			}
 		}
+		
 	}
 	@Override
 	public String toString() {
@@ -64,7 +68,18 @@ public class FrequentRoutesToplistSet<T> extends TreeSet<Route> implements Sorte
 		
 		return builder.toString();
 		
+	}
+	
+	public Route get(int index){
+		if( this.size() < index+1){
+			return null;
+		}
 		
+		Iterator<Route> iterator = this.iterator();
+		for(int i = 0 ; i < index ; i++){
+			iterator.next();
+		}
+		return iterator.next();
 	}
 
 	

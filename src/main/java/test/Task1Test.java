@@ -21,6 +21,7 @@ import org.kie.api.runtime.KieSessionConfiguration;
 import org.kie.api.runtime.conf.ClockTypeOption;
 
 import onlab.event.TaxiLog;
+import onlab.event.Tick;
 import onlab.positioning.Cell;
 import onlab.positioning.Route;
 import onlab.utility.FrequentRoutesToplistSet;
@@ -28,10 +29,9 @@ import onlab.utility.FrequentRoutesToplistSet;
 @SuppressWarnings("restriction")
 public class Task1Test {
 
-	private Set<Route> toplist;
+	private FrequentRoutesToplistSet<Route> toplist;
 	private KieSession kSession;
 	private SessionPseudoClock clock;
-	private Calendar calendar;
 	private static List<Cell> cells;
 	private static List<TaxiLog> route1tlogs;
 	private static List<TaxiLog> route2tlogs;
@@ -71,9 +71,10 @@ public class Task1Test {
 		config.setOption(ClockTypeOption.get("pseudo"));
 		kSession = kContainer.newKieSession("ksession-rules", config);
 		clock = kSession.getSessionClock();
+		//calendar = Calendar.getInstance().setTimeInMillis(clock.getCurrentTime());
 		kSession.setGlobal("mostFrequentRoutes", toplist);
-		calendar = Calendar.getInstance();
-		calendar.setTimeInMillis(0);
+		//calendar = Calendar.getInstance();
+		//calendar.setTimeInMillis(0);
 		
 		for(int i = 0 ; i < 4 ; i++){
 			route1tlogs.get(i).setProcessed(false);
@@ -92,8 +93,23 @@ public class Task1Test {
 	public void tearDown() throws Exception {
 	}
 
+	
+	
 	@Test
-	public void test1() {
+	public void test_insertOneTaxiLog(){
+		TaxiLog tlog1 = route1tlogs.get(0);
+		Route route = new Route(tlog1.getPickup_cell(), tlog1.getDropoff_cell(), tlog1.getDropoff_datetime(), 1);
+			
+		kSession.insert(tlog1);
+		kSession.fireAllRules();
+		
+		boolean check = route.equals(toplist.get(0))&& toplist.size() == 1;
+		assertTrue(check);
+	}
+	
+	
+	@Test
+	public void testAgeing() {
 		
 		//First minute +1 route1, +1 route2, +1 route3
 		kSession.insert(route1tlogs.get(0));
@@ -104,47 +120,42 @@ public class Task1Test {
 		
 		//Second minute, +1 route1, +1 route2
 		clock.advanceTime(60, TimeUnit.SECONDS);
-		calendar.add(Calendar.SECOND, 60);
-		route1tlogs.get(1).setDropoff_datetime(calendar.getTime());
+		
+		route1tlogs.get(1).setDropoff_datetime(new Date(clock.getCurrentTime()));
 		kSession.insert(route1tlogs.get(1));
-		route2tlogs.get(1).setDropoff_datetime(calendar.getTime());
+		route2tlogs.get(1).setDropoff_datetime(new Date(clock.getCurrentTime()));
 		kSession.insert(route2tlogs.get(1));
 		kSession.fireAllRules();
 		System.out.println(toplist);
 		
 		//Third minute +1 route1
 		clock.advanceTime(60, TimeUnit.SECONDS);
-		calendar.add(Calendar.SECOND, 60);
-		route1tlogs.get(2).setDropoff_datetime(calendar.getTime());
+		route1tlogs.get(2).setDropoff_datetime(new Date(clock.getCurrentTime()));
 		kSession.insert(route1tlogs.get(2));
 		kSession.fireAllRules();
 		System.out.println(toplist);
 		
 		//Fourth minute, +1 route3
 		clock.advanceTime(60, TimeUnit.SECONDS);
-		calendar.add(Calendar.SECOND, 60);
-		route3tlogs.get(1).setDropoff_datetime(calendar.getTime());
+		route3tlogs.get(1).setDropoff_datetime(new Date(clock.getCurrentTime()));
 		kSession.insert(route3tlogs.get(1));
 		kSession.fireAllRules();
 		
 		System.out.println(toplist);
 		
 		
-		clock.advanceTime(25, TimeUnit.MINUTES);
+		clock.advanceTime(30, TimeUnit.MINUTES);
+		//clock.advanceTime(1, TimeUnit.SECONDS);
+		
+		kSession.insert(new Tick(clock.getCurrentTime()));
 		kSession.fireAllRules();
 		
 	    assertTrue(true);
-		
+	    System.out.println(toplist);
 		
 		
 	}
 	
-	/*private void increaseDropoffDate(TaxiLog tlog, int sec){
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(tlog.getDropoff_datetime());		
-		cal.add(Calendar.SECOND, sec);
-		tlog.setDropoff_datetime(cal.getTime());
-	}*/
 	
 	private static TaxiLog setUpTaxilog(Cell startCell, Cell endCell/*, Calendar cal*/){
 		TaxiLog tlog = new TaxiLog();
