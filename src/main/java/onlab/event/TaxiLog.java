@@ -3,6 +3,7 @@ package onlab.event;
 import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.logging.Logger;
 
 import onlab.positioning.Cell;
@@ -26,11 +27,13 @@ public class TaxiLog {
 	private BigDecimal total_amount;
 	private Cell pickup_cell;
 	private Cell dropoff_cell;
+	private boolean isProcessed = false;
 		
 	
 
 	private static final Logger LOGGER = Logger.getLogger(TaxiLog.class.getName());
 
+	
 	public String getMedallion() {
 		return medallion;
 	}
@@ -176,7 +179,21 @@ public class TaxiLog {
 			this.payment_type = payment_type;
 		}
 
+	
 	}
+	
+	
+
+	public boolean isProcessed() {
+		return isProcessed;
+	}
+
+	public void setProcessed(boolean isProcessed) {
+		this.isProcessed = isProcessed;
+	}
+
+	
+	
 	
 	
 
