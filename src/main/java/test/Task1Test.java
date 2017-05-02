@@ -107,6 +107,33 @@ public class Task1Test {
 		assertTrue(check);
 	}
 	
+	@Test
+	public void test_sortByFrequency(){
+		TaxiLog tlog1 = route1tlogs.get(0);
+		TaxiLog tlog2 = route2tlogs.get(0);
+		TaxiLog tlog3 = route1tlogs.get(1);
+		
+		Route route1 = new Route(tlog1.getPickup_cell(), tlog1.getDropoff_cell(), tlog1.getDropoff_datetime(), 1);
+		Route route2 = new Route(tlog2.getPickup_cell(), tlog2.getDropoff_cell(), tlog2.getDropoff_datetime(), 1);
+		Route route3 = new Route(tlog3.getPickup_cell(), tlog3.getDropoff_cell(), tlog3.getDropoff_datetime(), 2);
+		kSession.insert(tlog1);
+		kSession.insert(tlog2);
+		kSession.fireAllRules();
+		
+		boolean check = toplist.size() == 2 && route2.equals(toplist.get(0)) && route1.equals(toplist.get(1));
+		assertTrue("check1",check);
+		
+		kSession.insert(tlog3);
+		kSession.fireAllRules();
+		check = toplist.size() == 2 && route2.equals(toplist.get(1)) && route3.equals(toplist.get(0));
+		assertTrue("check1",check);
+		
+		
+		
+			
+		kSession.insert(tlog1);
+	}
+	
 	
 	@Test
 	public void testAgeing() {

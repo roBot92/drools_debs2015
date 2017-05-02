@@ -36,7 +36,7 @@ public class ProfitableAreaToplistSet<T> extends TreeSet<AreaWithProfit> impleme
 		return result;
 	}
 	
-	public void refresh(long currentTimeInMillis){
+	/*public void refresh(long currentTimeInMillis){
 		List<AreaWithProfit> removables = new ArrayList<AreaWithProfit>();
 		for(AreaWithProfit i : this){
 			if(i.getLastInserted() + 15*60*1000 < currentTimeInMillis){
@@ -46,7 +46,7 @@ public class ProfitableAreaToplistSet<T> extends TreeSet<AreaWithProfit> impleme
 		
 		this.removeAll(removables);
 		
-	}
+	}*/
 	
 	@Override
 	public String toString() {

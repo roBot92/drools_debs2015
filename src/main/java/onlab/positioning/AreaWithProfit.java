@@ -3,13 +3,13 @@ package onlab.positioning;
 import java.math.BigDecimal;
 import java.util.Date;
 
-public class AreaWithProfit implements Comparable<AreaWithProfit>{
+public class AreaWithProfit implements Comparable<AreaWithProfit> {
 
 	private Cell cell;
 	private BigDecimal medianProfit;
-	private long lastInserted;
-	
-	public AreaWithProfit(Cell cell, double medianProfit, long lastInserted) {
+	private Date lastInserted;
+
+	public AreaWithProfit(Cell cell, double medianProfit, Date lastInserted) {
 		this.cell = cell;
 		this.medianProfit = BigDecimal.valueOf(medianProfit);
 		this.lastInserted = lastInserted;
@@ -30,14 +30,12 @@ public class AreaWithProfit implements Comparable<AreaWithProfit>{
 	public void setMedianProfit(BigDecimal medianProfit) {
 		this.medianProfit = medianProfit;
 	}
-	
-	
 
-	public long getLastInserted() {
+	public Date getLastInserted() {
 		return lastInserted;
 	}
 
-	public void setLastInserted(long lastInserted) {
+	public void setLastInserted(Date lastInserted) {
 		this.lastInserted = lastInserted;
 	}
 
@@ -46,6 +44,7 @@ public class AreaWithProfit implements Comparable<AreaWithProfit>{
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((cell == null) ? 0 : cell.hashCode());
+		result = prime * result + ((lastInserted == null) ? 0 : lastInserted.hashCode());
 		result = prime * result + ((medianProfit == null) ? 0 : medianProfit.hashCode());
 		return result;
 	}
@@ -64,6 +63,11 @@ public class AreaWithProfit implements Comparable<AreaWithProfit>{
 				return false;
 		} else if (!cell.equals(other.cell))
 			return false;
+		if (lastInserted == null) {
+			if (other.lastInserted != null)
+				return false;
+		} else if (!lastInserted.equals(other.lastInserted))
+			return false;
 		if (medianProfit == null) {
 			if (other.medianProfit != null)
 				return false;
@@ -74,21 +78,18 @@ public class AreaWithProfit implements Comparable<AreaWithProfit>{
 
 	@Override
 	public int compareTo(AreaWithProfit area) {
-		if(this.equals(area)){
+		if (this.equals(area)) {
 			return 0;
 		}
-		
-		//Reverse order, biggest first.
-		else return this.medianProfit.compareTo(area.getMedianProfit()) * -1;
+
+		// Reverse order, biggest first.
+		else
+			return this.medianProfit.compareTo(area.getMedianProfit()) * -1;
 	}
 
-	
 	@Override
 	public String toString() {
-		return "Cell: " + this.cell + " - Median profit: " + this.medianProfit + " - Dropoff time: "+new Date(this.lastInserted);
+		return "Cell: " + this.cell + " - Median profit: " + this.medianProfit + " - Dropoff time: " + lastInserted;
 	}
-	
-	
-	
-	
+
 }
