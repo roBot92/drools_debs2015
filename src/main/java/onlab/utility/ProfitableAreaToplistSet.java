@@ -1,13 +1,11 @@
 package onlab.utility;
 
-import java.util.ArrayList;
+
 import java.util.Iterator;
-import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import onlab.positioning.AreaWithProfit;
-import onlab.positioning.Route;
 
 @SuppressWarnings("serial")
 public class ProfitableAreaToplistSet<T> extends TreeSet<AreaWithProfit> implements SortedSet<AreaWithProfit> {
@@ -56,7 +54,7 @@ public class ProfitableAreaToplistSet<T> extends TreeSet<AreaWithProfit> impleme
 			builder.append((counter++) + area.toString() + "\n");
 		}
 		
-		while(counter < MAX_ELEMENT_NUMBER){
+		while(counter <= MAX_ELEMENT_NUMBER){
 			builder.append((counter++) + "NULL"+"\n");
 		}
 		

@@ -21,7 +21,7 @@ declare Tick
 @expires( 1s )
 end
 
-declare RefreshArea
+declare RefreshAreas
 @role(event)
 @timestamp(currentTime)
 end
@@ -66,23 +66,27 @@ rule "refreshArea"
     		}
 		}
 		
-		mostProfitableAreas.add(new AreaWithProfit($cell, $medianProfit.doubleValue() / $counter , $ctime));
+		mostProfitableAreas.add(new AreaWithProfit($cell, $medianProfit.doubleValue() / ($counter == 0 ? 1 : $counter) , $ctime));
 end
+
+
 
 query "newerRidesOfDriver"  (String $license, java.util.Date $threshold)
 
       $tlog: TaxiLog(hack_license.equals($license) , $threshold.before(dropoff_datetime) )
 end
-/*
-rule "TaxiLog_decrease2"
+
+rule "remove_TaxiLog_from_pickupCell"
 
     when
         $tick:Tick($currentTime : currentTime )
+        $tlog:TaxiLog(dropoff_datetime.getTime() + 15 * 1000 < $currentTime, $pickupCell : pickup_cell)
     then
-    	mostProfitableAreas.refresh($currentTime); 
+    	insertLogical(new RefreshAreas($pickupCell, new java.util.Date($currentTime)));
+    	//mostProfitableAreas.refresh(); 
        
         
 
 end
-*/
+
 

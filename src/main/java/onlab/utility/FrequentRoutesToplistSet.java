@@ -49,7 +49,7 @@ public class FrequentRoutesToplistSet<T extends Route> extends TreeSet<Route> im
 		if(decreasable != null){
 			decreasable.setFrequency(decreasable.getFrequency() - 1);
 			if(decreasable.getFrequency() > 0){
-				this.add(decreasable);
+				super.add(decreasable);
 			}
 		}
 		
@@ -62,7 +62,7 @@ public class FrequentRoutesToplistSet<T extends Route> extends TreeSet<Route> im
 			builder.append((counter++) + route.toString() + "\n");
 		}
 		
-		while(counter < MAX_ELEMENT_NUMBER){
+		while(counter < MAX_ELEMENT_NUMBER+1){
 			builder.append((counter++) + "NULL" + "\n");
 		}
 		
@@ -82,5 +82,16 @@ public class FrequentRoutesToplistSet<T extends Route> extends TreeSet<Route> im
 		return iterator.next();
 	}
 
+	public boolean containsRoute(Cell pickup, Cell dropoff){
+		if(this.size() == 0){
+			return false;
+		}
+		for(Route route: this){
+			if(route.getPickup_Cell() == pickup && route.getDropoff_Cell() == dropoff){
+				return true;
+			}
+		}
+		return false;
+	}
 	
 }

@@ -49,16 +49,16 @@ public class CellHelperTest {
 
 	@Test
 	public void testWithValidValues() {
-		Cell cell1 = cellHelper.getCell(new Coordinate(BigDecimal.valueOf(-5), BigDecimal.valueOf(5)));
+		/*Cell cell1 = cellHelper.getCell(new Coordinate(BigDecimal.valueOf(-5), BigDecimal.valueOf(5)));
 		Cell cell2 = cellHelper.getCell(new Coordinate(BigDecimal.valueOf(-1.6), BigDecimal.valueOf(4.1)));
 		Cell cell3 = cellHelper.getCell(new Coordinate(BigDecimal.valueOf(-0.501), BigDecimal.valueOf(6)));
 		Cell cell4 = cellHelper.getCell(new Coordinate(BigDecimal.valueOf(-6.49), BigDecimal.valueOf(6.5)));
 		Cell cell5 = cellHelper.getCell(new Coordinate(BigDecimal.valueOf(-10.49999), BigDecimal.valueOf(10.499999)));
 		Cell cell6 = cellHelper.getCell(new Coordinate(BigDecimal.valueOf(-0.501), BigDecimal.valueOf(0.5)));
-		
+		*/
 		//Assert.assertArrayEquals(Arrays.asList(new Cell()), actuals);
 		
-		List<Cell> cells = Arrays.asList(cell1, cell2, cell3, cell4, cell5, cell6);
+	//	List<Cell> cells = Arrays.asList(cell1, cell2, cell3, cell4, cell5, cell6);
 	    //Assert.assertArrayEquals([new Cell(6,6)], actuals);
 
 	}

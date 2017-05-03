@@ -19,7 +19,31 @@ declare Tick
 @expires( 1s )
 end
 
+declare RefreshRoute
+@role(event)
+@timestamp(currentTime)
+end 
 
+rule "refreshRoute"
+salience 100
+	when
+		RefreshRoute($pickupCell:pickup_cell , $dropoffCell:dropoff_cell )
+		TaxiLog(!mostFrequentRoutes.containsRoute($pickupCell, $dropoffCell), $refPickupCell: pickup_cell, $refDropoffCell: dropoff_cell)
+		$countOfRoutes : java.lang.Number(doubleValue > 0) from accumulate 
+        			( TaxiLog( pickup_cell == $refPickupCell , dropoff_cell == $refDropoffCell, pickup_cell  != null, dropoff_cell != null) over window:time(30m),
+        			count()
+        			)
+        $maxDate : java.lang.Number() from accumulate 
+        			( TaxiLog( pickup_cell == $refPickupCell , dropoff_cell == $refDropoffCell, pickup_cell  != null, dropoff_cell != null, $dropoffDate: dropoff_datetime) over window:time(30m),
+        			 max($dropoffDate.getTime())
+        			)
+	then
+	
+	
+		mostFrequentRoutes.add(new Route($refPickupCell, $refDropoffCell, new java.util.Date($maxDate.longValue()), (java.lang.Long) $countOfRoutes));
+		
+	
+end
 
 
 
@@ -27,7 +51,7 @@ end
 rule "TaxiLog_rule"
 
     when
-        $tlog: TaxiLog(!processed ,$pickupCell : pickup_cell , $dropoffCell : dropoff_cell , $dropoffTime : dropoff_datetime)
+        $tlog: TaxiLog(!processed,$pickupCell : pickup_cell , $dropoffCell : dropoff_cell , $dropoffTime : dropoff_datetime)
         $countOfRoutes : java.lang.Number(doubleValue > 0) from accumulate 
         			( TaxiLog( pickup_cell == $pickupCell , dropoff_cell == $dropoffCell, pickup_cell  != null, dropoff_cell != null) over window:time(30m),
         			count()
@@ -47,15 +71,15 @@ rule "TaxiLog_rule"
 end
 
 rule "TaxiLog_decrease"
-
+    salience 50
     when
         $tick:Tick($currentTime : currentTime )
-        $tlog:TaxiLog((dropoff_datetime.getTime() + 30 * 60 * 1000) < $currentTime)
-    then
+        $tlog:TaxiLog((dropoff_datetime.getTime() + 30 * 60 * 1000) < $currentTime, $pickupCell: pickup_cell, $dropoffCell: dropoff_cell)
+    then 
     
-    	mostFrequentRoutes.decreaseRouteFrequency($tlog.getPickup_cell(), $tlog.getDropoff_cell());
+    	mostFrequentRoutes.decreaseRouteFrequency($pickupCell, $dropoffCell);
     	retract($tlog);	
-       
+     	insertLogical(new RefreshRoute($pickupCell, $dropoffCell, $currentTime));
         
 
 end
