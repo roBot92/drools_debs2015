@@ -3,6 +3,9 @@
     <kbase name="rules" packages="rules" eventProcessingMode="stream" >
         <ksession name="ksession-rules"/>
     </kbase>
+    <kbase name="rules" packages="rules2" eventProcessingMode="stream" >
+        <ksession name="ksession-rules2"/>
+    </kbase>
     <kbase name="process" packages="process" eventProcessingMode="stream" >
         <ksession name="ksession-process"/>
     </kbase>

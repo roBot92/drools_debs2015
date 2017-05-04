@@ -9,10 +9,14 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 	private BigDecimal medianProfit;
 	private Date lastInserted;
 
-	public AreaWithProfit(Cell cell, double medianProfit, Date lastInserted) {
+	public AreaWithProfit(Cell cell, BigDecimal medianProfit, Date lastInserted) {
 		this.cell = cell;
-		this.medianProfit = BigDecimal.valueOf(medianProfit);
+		this.medianProfit = medianProfit;
 		this.lastInserted = lastInserted;
+	}
+	
+	public AreaWithProfit(Cell cell) {
+		this.cell = cell;
 	}
 
 	public Cell getCell() {

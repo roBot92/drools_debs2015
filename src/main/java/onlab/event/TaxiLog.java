@@ -27,6 +27,7 @@ public class TaxiLog {
 	private Cell pickup_cell;
 	private Cell dropoff_cell;
 	private boolean isProcessed = false;
+	private boolean olderThanAQuarter = false;
 	
 
 	private static final Logger LOGGER = Logger.getLogger(TaxiLog.class.getName());
@@ -180,5 +181,15 @@ public class TaxiLog {
 	public void setProcessed(boolean isProcessed) {
 		this.isProcessed = isProcessed;
 	}
+
+	public boolean isOlderThanAQuarter() {
+		return olderThanAQuarter;
+	}
+
+	public void setOlderThanAQuarter(boolean olderThanAQuarter) {
+		this.olderThanAQuarter = olderThanAQuarter;
+	}
+	
+	
 
 }
