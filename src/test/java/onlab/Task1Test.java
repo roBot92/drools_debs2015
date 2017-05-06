@@ -1,4 +1,4 @@
-package test;
+package onlab;
 
 import static org.junit.Assert.*;
 
@@ -19,8 +19,10 @@ import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.KieSessionConfiguration;
 import org.kie.api.runtime.conf.ClockTypeOption;
 
-import onlab.event.TaxiLog;
-import onlab.event.Tick;
+import onlab.positioning.Cell; 
+ 
+import onlab.event.TaxiLog; 
+import onlab.event.Tick; 
 import onlab.positioning.Cell;
 import onlab.positioning.Route;
 import onlab.utility.FrequentRoutesToplistSet;
@@ -35,8 +37,8 @@ public class Task1Test {
 	private static List<TaxiLog> route1tlogs;
 	private static List<TaxiLog> route2tlogs;
 	private static List<TaxiLog> route3tlogs;
-
-	@BeforeClass
+ 
+	@BeforeClass 
 	public static void setUpBeforeClass() throws Exception {
 		// calendar = Calendar.getInstance();
 		cells = Arrays.asList(new Cell(1, 1), new Cell(1, 2), new Cell(2, 1), new Cell(2, 2), new Cell(3, 1),

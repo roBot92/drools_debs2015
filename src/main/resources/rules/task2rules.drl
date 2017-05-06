@@ -8,13 +8,13 @@ import onlab.positioning.*
 import org.kie.api.runtime.rule.QueryResults
 import java.math.BigDecimal;
 import accumulate onlab.utility.MedianAccumulateFunction median
-
+/*
 //declare any global variables here
 declare TaxiLog
 @role(event)
 @timestamp(dropoff_datetime)
 //@expires( 32m )
-end
+end 
 
 declare Tick
 @role(event)
@@ -83,7 +83,7 @@ rule "refreshAreaRule"
         			( TaxiLog($fare: fare_amount , $tip:tip_amount , pickup_cell == $cell) over window:time(15m);
         			median($fare.add($tip))
         			)
-        $taxiListOfArea: java.util.ArrayList() from collect (TaxiLog(dropoff_cell == $cell) over window:time(30m))
+        $taxiListOfArea: java.util.ArrayList() from collect (TaxiLog(dropoff_cell == $cell) over window:time(30m)) 
 	then	
 	
 		int $numOfEmptyTaxis= 0;
@@ -160,5 +160,5 @@ rule "removeAreaFromWM"
 		insertLogical(new ReOrderAreas());
 end
 
-
+*/
 

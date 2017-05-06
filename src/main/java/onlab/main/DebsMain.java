@@ -51,7 +51,7 @@ public class DebsMain {
 		KieSessionConfiguration config = ks.newKieSessionConfiguration();
 
 		config.setOption(ClockTypeOption.get("pseudo"));
-		KieSession kSession = kContainer.newKieSession("ksession-rules", config);
+		KieSession kSession = kContainer.newKieSession("ksession-rules", config); 
 
 		// Task1
 		SortedSet<Route> mostFrequentRoutes = new FrequentRoutesToplistSet<Route>();

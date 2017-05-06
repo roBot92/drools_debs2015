@@ -1,4 +1,4 @@
-package test;
+package onlab.positioning;
 
 
 import java.math.BigDecimal;
@@ -11,10 +11,10 @@ import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import onlab.positioning.Cell;
-import onlab.positioning.CellHelper;
-import onlab.positioning.Coordinate;
+ 
+//import onlab.positioning.Cell;
+//import onlab.positioning.CellHelper;
+//import onlab.positioning.Coordinate;
 
 @SuppressWarnings("restriction")
 public class CellHelperTest {

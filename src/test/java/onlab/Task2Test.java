@@ -1,4 +1,4 @@
-package test;
+package onlab;
 
 import static org.junit.Assert.*;
 
@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.drools.core.time.SessionPseudoClock;
-import org.junit.After;
+//import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -16,13 +16,12 @@ import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.KieSessionConfiguration;
 import org.kie.api.runtime.conf.ClockTypeOption;
 
-import onlab.event.TaxiLog;
 import onlab.positioning.Cell;
 import onlab.positioning.Route;
 import onlab.utility.FrequentRoutesToplistSet;
 
 @SuppressWarnings("restriction")
-public class Task2Test {
+public class Task2Test { 
 
 	private FrequentRoutesToplistSet<Route> toplist;
 	private KieSession kSession;
@@ -54,9 +53,12 @@ public class Task2Test {
 		// calendar = Calendar.getInstance();
 		// calendar.setTimeInMillis(0);
 
-		
-
 	}
+
+		@Test
+		public void sample_Test(){
+			assertTrue(true);
+		}
 
 
 }
