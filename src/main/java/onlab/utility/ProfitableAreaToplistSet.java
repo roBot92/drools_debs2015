@@ -1,11 +1,10 @@
 package onlab.utility;
 
-
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import onlab.positioning.AreaWithProfit;
+import onlab.event.AreaWithProfit;
 
 @SuppressWarnings("serial")
 public class ProfitableAreaToplistSet<T> extends TreeSet<AreaWithProfit> implements SortedSet<AreaWithProfit> {
@@ -14,6 +13,11 @@ public class ProfitableAreaToplistSet<T> extends TreeSet<AreaWithProfit> impleme
 
 	@Override
 	public boolean add(AreaWithProfit area) {
+
+		Iterator<AreaWithProfit> descIterator = this.descendingIterator();
+		if (this.size() >= MAX_ELEMENT_NUMBER && descIterator.next().compareTo(area) == -1) {
+			return false;
+		}
 		Iterator<AreaWithProfit> i = this.iterator();
 
 		while (i.hasNext()) {
@@ -33,33 +37,43 @@ public class ProfitableAreaToplistSet<T> extends TreeSet<AreaWithProfit> impleme
 
 		return result;
 	}
-	
-	/*public void refresh(long currentTimeInMillis){
-		List<AreaWithProfit> removables = new ArrayList<AreaWithProfit>();
-		for(AreaWithProfit i : this){
-			if(i.getLastInserted() + 15*60*1000 < currentTimeInMillis){
-				removables.add(i);
-			}
-		}
-		
-		this.removeAll(removables);
-		
-	}*/
-	
+
+	/*
+	 * public void refresh(long currentTimeInMillis){ List<AreaWithProfit>
+	 * removables = new ArrayList<AreaWithProfit>(); for(AreaWithProfit i :
+	 * this){ if(i.getLastInserted() + 15*60*1000 < currentTimeInMillis){
+	 * removables.add(i); } }
+	 * 
+	 * this.removeAll(removables);
+	 * 
+	 * }
+	 */
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		int counter = 1;
-		for(AreaWithProfit area : this){
+		for (AreaWithProfit area : this) {
 			builder.append((counter++) + area.toString() + "\n");
 		}
-		
-		while(counter <= MAX_ELEMENT_NUMBER){
-			builder.append((counter++) + "NULL"+"\n");
+
+		while (counter <= MAX_ELEMENT_NUMBER) {
+			builder.append((counter++) + "NULL" + "\n");
 		}
-		
+
 		return builder.toString();
-		
+
+	}
+
+	public AreaWithProfit get(int index) {
+		if (index >=  this.size()) {
+			return null;
+		}
+		Iterator<AreaWithProfit> iterator = this.iterator();
+		for(int i = 0 ; i < index ; i++){
+			iterator.next();
+		}
+		return iterator.next();
 		
 	}
 

@@ -12,6 +12,8 @@ import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.KieSessionConfiguration;
 import org.kie.api.runtime.conf.ClockTypeOption;
+
+import onlab.event.AreaWithProfit;
 import onlab.event.TaxiLog;
 import onlab.event.Tick;
 import onlab.positioning.*;

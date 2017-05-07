@@ -1,7 +1,9 @@
-package onlab.positioning;
+package onlab.event;
 
 import java.math.BigDecimal;
 import java.util.Date;
+
+import onlab.positioning.Cell;
 
 public class AreaWithProfit implements Comparable<AreaWithProfit> {
 
@@ -15,8 +17,9 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 		this.lastInserted = lastInserted;
 	}
 	
-	public AreaWithProfit(Cell cell) {
+	public AreaWithProfit(Cell cell, Date lastInserted) {
 		this.cell = cell;
+		this.lastInserted = lastInserted;
 	}
 
 	public Cell getCell() {
@@ -86,9 +89,32 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 			return 0;
 		}
 
-		// Reverse order, biggest first.
-		else
-			return this.medianProfit.compareTo(area.getMedianProfit()) * -1;
+		BigDecimal otherMedian = area.getMedianProfit();
+		Date otherTime = area.getLastInserted();
+		
+		if(otherMedian == null){
+			return -1;
+		}
+		else if( medianProfit == null){
+			return 1;
+		}
+		if(medianProfit.compareTo(otherMedian) != 0){
+			return medianProfit.compareTo(otherMedian) * -1;
+		}
+		
+		if(otherTime == null){
+			return -1;
+		}
+		else if( lastInserted == null){
+			return 1;
+		}
+		
+		if(lastInserted.compareTo(otherTime) != 0){
+			return lastInserted.compareTo(otherTime) * -1;
+		}
+		
+		return -1;
+			
 	}
 
 	@Override
