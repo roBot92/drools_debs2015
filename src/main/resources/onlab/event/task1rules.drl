@@ -73,8 +73,7 @@ salience 0
       $tlog.setProcessed(true); 
       update($tlog);
       insertLogical(new ActivateArea($pickupCell, $currentTime));
-      insertLogical(new RefreshArea($pickupCell,$currentTime));     
-      insertLogical(new RefreshArea($pickupCell,$currentTime));
+      insertLogical(new RefreshArea($pickupCell,$currentTime));  
       insertLogical(new ReOrderAreas());
 
 end
@@ -97,10 +96,10 @@ rule "task2_refreshAreaRule"
 salience 20
 	when
 		RefreshArea($ctime: currentTime, $cell:cell)
-		$area:AreaWithProfit($cell == cell, lastInserted.getTime()+30*60*1000 >= $ctime.getTime())
+		$area:AreaWithProfit($cell == cell, lastInserted.getTime()+15*60*1000 >= $ctime.getTime())
 		
 		$median : java.math.BigDecimal() from accumulate 
-        			( TaxiLog($fare: fare_amount , $tip:tip_amount , pickup_cell == $cell) over window:time(15m),
+        			( TaxiLog($fare: fare_amount , $tip:tip_amount , pickup_cell == $cell, pickup_datetime.getTime()+15*60*1000 >= $ctime.getTime() ),
         			init(CustomTreeMultiset list = new CustomTreeMultiset();),
         			action(
         				list.add($fare.add($tip));
@@ -116,7 +115,6 @@ salience 20
 			TaxiLog $tlog = (TaxiLog)$o;
 			QueryResults results =
     		kcontext.getKnowledgeRuntime().getQueryResults( "task2_newerRidesOfDriver", new Object[]{$tlog.getHack_license(), $tlog.getDropoff_datetime()} );
-    		//boolean hasNewerRide = task2_hasNewerRide($tlog.getHack_license(), $tlog.getDropoff_datetime());
     		if(results.size() == 0 ){
     			$numOfEmptyTaxis++;
     		}
@@ -137,7 +135,7 @@ rule "task2_deactivateArea"
 salience 25
 	when
 		RefreshArea($ctime: currentTime, $cell:cell)
-		$area:AreaWithProfit($cell == cell, lastInserted.getTime()+30*60*1000 < $ctime.getTime())
+		$area:AreaWithProfit($cell == cell, lastInserted.getTime()+15*60*1000 < $ctime.getTime())
 	then
 		retract($area);
 end			
@@ -177,19 +175,29 @@ salience 5
 		ReOrderAreas()
 		$areas:  java.util.ArrayList() from collect( AreaWithProfit() )
 	then
+		mostProfitableAreas.clear();
 		if($areas != null){
 		mostProfitableAreas.addAll($areas);
 		}
 		
 end	
 
+rule "task2_NoAreas"
+salience 5
+	when
+		ReOrderAreas()
+		not AreaWithProfit()
+	then
+		mostProfitableAreas.clear();
+		
+end	
 
 
 rule "task2_removeAreaFromWM"
 salience 5
 	when
 		Tick($currentTime : currentTime )
-		$area:AreaWithProfit(lastInserted.getTime() + 30 * 60 * 1000 < $currentTime)
+		$area:AreaWithProfit(lastInserted.getTime() + 15 * 60 * 1000 < $currentTime)
 	then
 		retract($area);
 		insertLogical(new ReOrderAreas());
@@ -262,3 +270,14 @@ query "task2_newerRidesOfDriver"  (String $license, java.util.Date $threshold)
 
       tlog:TaxiLog(hack_license.equals($license) , $threshold.before(dropoff_datetime) )
 end
+
+//For debug
+query "areas"  ()
+
+      areas:AreaWithProfit()
+end
+
+query "taxis"()
+	taxis: TaxiLog()
+end
+

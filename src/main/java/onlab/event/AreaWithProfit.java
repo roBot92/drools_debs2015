@@ -78,7 +78,7 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 		if (medianProfit == null) {
 			if (other.medianProfit != null)
 				return false;
-		} else if (!medianProfit.equals(other.medianProfit))
+		} else if (medianProfit.compareTo(other.medianProfit) != 0)
 			return false;
 		return true;
 	}
