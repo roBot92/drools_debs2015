@@ -67,14 +67,14 @@ end
 rule "task2_new_TaxiLog_rule" 
 salience 0
     when
-      $tlog: TaxiLog(!processed, $pickupCell: pickup_cell , $dropoffCell: dropoff_cell , $currentTime: dropoff_datetime )
+      $tlog: TaxiLog(!processed, $pickupCell: pickup_cell , $dropoffCell: dropoff_cell , $currentTime: dropoff_datetime , $inserted: inserted )
       
     then
       $tlog.setProcessed(true); 
       update($tlog);
       insertLogical(new ActivateArea($pickupCell, $currentTime));
-      insertLogical(new RefreshArea($pickupCell,$currentTime));  
-      insertLogical(new ReOrderAreas());
+      insertLogical(new RefreshArea($pickupCell,$currentTime, $inserted));  
+      insert(new ReOrderAreas());
 
 end
 
@@ -95,11 +95,11 @@ end
 rule "task2_refreshAreaRule"
 salience 20
 	when
-		RefreshArea($ctime: currentTime, $cell:cell)
+		RefreshArea($ctime: currentTime, $cell:cell, $insertedForDelay : insertedForDelay )
 		$area:AreaWithProfit($cell == cell, lastInserted.getTime()+15*60*1000 >= $ctime.getTime())
-		
+		/*pickup_datetime.getTime()+15*60*1000 >= $ctime.getTime()*/
 		$median : java.math.BigDecimal() from accumulate 
-        			( TaxiLog($fare: fare_amount , $tip:tip_amount , pickup_cell == $cell, pickup_datetime.getTime()+15*60*1000 >= $ctime.getTime() ),
+        			( TaxiLog($fare: fare_amount , $tip:tip_amount , pickup_cell == $cell) over window:time(15m),
         			init(CustomTreeMultiset list = new CustomTreeMultiset();),
         			action(
         				list.add($fare.add($tip));
@@ -108,6 +108,9 @@ salience 20
         			result(list.getMedian())
         			)
         $taxiListOfArea: java.util.ArrayList() from collect (TaxiLog(dropoff_cell == $cell) over window:time(30m)) 
+        $lastInserted: java.lang.Number() from accumulate(TaxiLog($dropoffTime : dropoff_datetime ,pickup_cell == $cell),
+        												max($dropoffTime.getTime())
+        												)
 	then	
 	
 		int $numOfEmptyTaxis= 0;
@@ -123,7 +126,9 @@ salience 20
 		BigDecimal $medianProfit = ((BigDecimal)$median).divide(($numOfEmptyTaxis == 0 ? BigDecimal.ONE : BigDecimal.valueOf($numOfEmptyTaxis)),2, BigDecimal.ROUND_HALF_UP);
 		if(!$medianProfit.equals($area.getMedianProfit())){
 			$area.setMedianProfit($medianProfit);
-			$area.setLastInserted($ctime);
+			$area.setLastInserted(new java.util.Date($lastInserted.longValue()));
+			$area.setInsertedForDelay($insertedForDelay);
+			$area.setDelay(0);
 			update($area);
 		}
 		
@@ -132,10 +137,10 @@ end
 
 
 rule "task2_deactivateArea"
-salience 25
+salience 10
 	when
-		RefreshArea($ctime: currentTime, $cell:cell)
-		$area:AreaWithProfit($cell == cell, lastInserted.getTime()+15*60*1000 < $ctime.getTime())
+		RefreshArea($ctime: currentTime, $cell:cell )
+		$area:AreaWithProfit(lastInserted.getTime() + 15 * 60 * 1000 < $ctime.getTime())
 	then
 		retract($area);
 end			
@@ -143,47 +148,51 @@ end
 
 
 rule "task2_remove_TaxiLog_from_pickupCell"
-salience 5
+salience 9
     when
-        $tick:Tick($currentTime : currentTime )
+        $tick:Tick($currentTime : currentTime, $insertedForDelay: inserted  )
         $tlog:TaxiLog(dropoff_datetime.getTime() + 15 * 60 * 1000 < $currentTime, !olderThanAQuarter, $pickupCell : pickup_cell)
     then
     	$tlog.setOlderThanAQuarter(true);
     	update($tlog);
-    	insertLogical(new RefreshArea($pickupCell, new java.util.Date($currentTime)));
-       	insertLogical(new ReOrderAreas());
+    	insertLogical(new RefreshArea($pickupCell, new java.util.Date($currentTime) , $insertedForDelay));
+  		insert(new ReOrderAreas());
         
 
 end
 
 rule "task2_remove_TaxiLog_from_WM"
-salience 5
+salience 4
     when
-        $tick:Tick($currentTime : currentTime )
+        $tick:Tick($currentTime : currentTime, $insertedForDelay : inserted  )
         $tlog:TaxiLog(dropoff_datetime.getTime() + 30 * 60 * 1000 < $currentTime, $dropoffCell : dropoff_cell)
     then
     	retract($tlog);
-    	insertLogical(new RefreshArea($dropoffCell, new java.util.Date($currentTime)));
-       	insertLogical(new ReOrderAreas());
+    	insertLogical(new RefreshArea($dropoffCell, new java.util.Date($currentTime) , $insertedForDelay));
+      	insert(new ReOrderAreas());
         
 
 end
 
 rule "task2_ReorderAreas_rule"
-salience 5
+salience -1
 	when
 		ReOrderAreas()
+		$allReorderCollection: java.util.ArrayList() from collect (ReOrderAreas())
 		$areas:  java.util.ArrayList() from collect( AreaWithProfit() )
 	then
 		mostProfitableAreas.clear();
 		if($areas != null){
 		mostProfitableAreas.addAll($areas);
 		}
+		for(Object $reorder : $allReorderCollection ){
+			retract($reorder);
+		}
 		
 end	
 
 rule "task2_NoAreas"
-salience 5
+salience -1
 	when
 		ReOrderAreas()
 		not AreaWithProfit()
@@ -193,77 +202,9 @@ salience 5
 end	
 
 
-rule "task2_removeAreaFromWM"
-salience 5
-	when
-		Tick($currentTime : currentTime )
-		$area:AreaWithProfit(lastInserted.getTime() + 15 * 60 * 1000 < $currentTime)
-	then
-		retract($area);
-		insertLogical(new ReOrderAreas());
-end
-
-/*
-rule "task1_refreshRoute"
-salience 100
-	when
-		RefreshRoute($pickupCell:pickup_cell , $dropoffCell:dropoff_cell )
-		TaxiLog(!mostFrequentRoutes.containsRoute($pickupCell, $dropoffCell), $refPickupCell: pickup_cell, $refDropoffCell: dropoff_cell)
-		$countOfRoutes : java.lang.Number(doubleValue > 0) from accumulate 
-        			( TaxiLog( pickup_cell == $refPickupCell , dropoff_cell == $refDropoffCell, pickup_cell  != null, dropoff_cell != null) over window:time(30m),
-        			count()
-        			)
-        $maxDate : java.lang.Number() from accumulate 
-        			( TaxiLog( pickup_cell == $refPickupCell , dropoff_cell == $refDropoffCell, pickup_cell  != null, dropoff_cell != null, $dropoffDate: dropoff_datetime) over window:time(30m),
-        			 max($dropoffDate.getTime())
-        			)
-	then
-	
-	
-		mostFrequentRoutes.add(new Route($refPickupCell, $refDropoffCell, new java.util.Date($maxDate.longValue()), (java.lang.Long) $countOfRoutes));
-		
-	
-end
 
 
 
-
-rule "task1_TaxiLog_rule"
-
-    when
-        $tlog: TaxiLog(!processed,$pickupCell : pickup_cell , $dropoffCell : dropoff_cell , $dropoffTime : dropoff_datetime)
-        $countOfRoutes : java.lang.Number(doubleValue > 0) from accumulate 
-        			( TaxiLog( pickup_cell == $pickupCell , dropoff_cell == $dropoffCell, pickup_cell  != null, dropoff_cell != null) over window:time(30m),
-        			count()
-        			)
-    then
-    
-    	
-    	 $tlog.setProcessed(true); 
-    	 update($tlog);
-    	
-    	
-    	mostFrequentRoutes.add(new Route($pickupCell, $dropoffCell, $dropoffTime, (java.lang.Long) $countOfRoutes));
-  
-       
-        
-
-end
-
-rule "task1_TaxiLog_decrease"
-    salience 50
-    when
-        $tick:Tick($currentTime : currentTime )
-        $tlog:TaxiLog((dropoff_datetime.getTime() + 30 * 60 * 1000) < $currentTime, $pickupCell: pickup_cell, $dropoffCell: dropoff_cell)
-    then 
-    
-    	mostFrequentRoutes.decreaseRouteFrequency($pickupCell, $dropoffCell);
-    	retract($tlog);	
-     	insertLogical(new RefreshRoute($pickupCell, $dropoffCell, $currentTime));
-        
-
-end
-*/
 
 
 query "task2_newerRidesOfDriver"  (String $license, java.util.Date $threshold)

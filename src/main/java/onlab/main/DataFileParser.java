@@ -244,6 +244,12 @@ public class DataFileParser {
 		}
 	}
 
+	public boolean hasNextLine(){
+		if(scanner == null){
+			return false;
+		}
+		return scanner.hasNextLine();
+	}
 	public void closeScanner() {
 		if (scanner != null) {
 			scanner.close();

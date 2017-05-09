@@ -71,15 +71,17 @@ public class DebsMain {
 		SessionPseudoClock clock = kSession.getSessionClock();
 		clock.advanceTime(previousTimeInMillis, TimeUnit.MILLISECONDS);
 
-		for (int i = 0; i < 10; i++) {
+		while (dataFileParser.hasNextLine()) {
 			taxiLogs = dataFileParser.parseNextLinesFromCSVGroupedByDropoffDate();
 			long currentTimeInMillis = taxiLogs.get(0).getDropoff_datetime().getTime();
 			stepXSeconds(kSession, clock, (currentTimeInMillis-previousTimeInMillis) / 1000);
 			for (TaxiLog tlog : taxiLogs) {
+				tlog.setInserted(System.currentTimeMillis());
 				kSession.insert(tlog);
 			}
 			kSession.fireAllRules();
 			previousTimeInMillis = currentTimeInMillis;
+			System.out.println(mostProfitableAreas);
 			
 			
 		}
@@ -106,7 +108,7 @@ public class DebsMain {
 		kSession.insert(new Tick(clock.getCurrentTime()));
 		for (long i = 0; i < sec-1; i++) {
 			clock.advanceTime(1, TimeUnit.SECONDS);
-			kSession.insert(new Tick(clock.getCurrentTime()));
+			kSession.insert(new Tick(clock.getCurrentTime(), System.currentTimeMillis()));
 			kSession.fireAllRules();
 		}
 	}

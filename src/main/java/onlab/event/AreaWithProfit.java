@@ -2,7 +2,9 @@ package onlab.event;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.logging.Logger;
 
+import onlab.main.DataFileParser;
 import onlab.positioning.Cell;
 
 public class AreaWithProfit implements Comparable<AreaWithProfit> {
@@ -10,6 +12,8 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 	private Cell cell;
 	private BigDecimal medianProfit;
 	private Date lastInserted;
+	private long delay;
+	private long insertedForDelay;
 
 	public AreaWithProfit(Cell cell, BigDecimal medianProfit, Date lastInserted) {
 		this.cell = cell;
@@ -119,7 +123,25 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 
 	@Override
 	public String toString() {
-		return "Cell: " + this.cell + " - Median profit: " + this.medianProfit + " - Dropoff time: " + lastInserted;
+		return "Cell: " + this.cell + " - Median profit: " + this.medianProfit + " - Dropoff time: " + lastInserted + "Delay: " + delay + " ms";
 	}
+
+	public long getDelay() {
+		return delay;
+	}
+
+	public void setDelay(long delay) {
+		this.delay = delay;
+	}
+
+	public long getInsertedForDelay() {
+		return insertedForDelay;
+	}
+
+	public void setInsertedForDelay(long insertedForDelay) {
+		this.insertedForDelay = insertedForDelay;
+	}
+	
+	
 
 }

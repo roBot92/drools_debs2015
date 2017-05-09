@@ -28,7 +28,7 @@ public class TaxiLog {
 	private Cell dropoff_cell;
 	private boolean isProcessed = false;
 	private boolean olderThanAQuarter = false;
-	
+	private long inserted;
 
 	private static final Logger LOGGER = Logger.getLogger(TaxiLog.class.getName());
 
@@ -188,6 +188,15 @@ public class TaxiLog {
 
 	public void setOlderThanAQuarter(boolean olderThanAQuarter) {
 		this.olderThanAQuarter = olderThanAQuarter;
+	}
+
+	public long getInserted() {
+		return inserted;
+	}
+
+	public TaxiLog setInserted(long inserted) {
+		this.inserted = inserted;
+		return this;
 	}
 	
 	

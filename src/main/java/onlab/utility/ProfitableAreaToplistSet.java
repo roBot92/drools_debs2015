@@ -1,8 +1,10 @@
 package onlab.utility;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 
 import onlab.event.AreaWithProfit;
 
@@ -10,6 +12,8 @@ import onlab.event.AreaWithProfit;
 public class ProfitableAreaToplistSet<T> extends TreeSet<AreaWithProfit> implements SortedSet<AreaWithProfit> {
 
 	private static int MAX_ELEMENT_NUMBER = 10;
+
+	private static final Logger LOGGER = Logger.getLogger(ProfitableAreaToplistSet.class.getName());
 
 	@Override
 	public boolean add(AreaWithProfit area) {
@@ -27,6 +31,7 @@ public class ProfitableAreaToplistSet<T> extends TreeSet<AreaWithProfit> impleme
 				break;
 			}
 		}
+		
 		boolean result = super.add(area);
 
 		if (this.size() > MAX_ELEMENT_NUMBER) {
@@ -35,6 +40,9 @@ public class ProfitableAreaToplistSet<T> extends TreeSet<AreaWithProfit> impleme
 			i.remove();
 		}
 
+		if(area.getDelay() == 0){
+			area.setDelay(System.currentTimeMillis() - area.getInsertedForDelay());
+		}
 		return result;
 	}
 
@@ -76,5 +84,19 @@ public class ProfitableAreaToplistSet<T> extends TreeSet<AreaWithProfit> impleme
 		return iterator.next();
 		
 	}
+	@Override
+	public void clear(){
+		super.clear();
+	}
+
+	@Override
+	public boolean addAll(Collection<? extends AreaWithProfit> arg0) {
+		long starttime = System.currentTimeMillis();
+		boolean result = super.addAll(arg0);
+		LOGGER.info(this.getClass().getName() + " addAll method length: "+ (System.currentTimeMillis() - starttime) + " ms");
+		return result;
+	}
+	
+	
 
 }
