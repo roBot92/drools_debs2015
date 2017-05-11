@@ -4,16 +4,18 @@ import java.util.Date;
 
 import onlab.positioning.Cell;
 
-public class RefreshRoute {
+public class ActivateRoute {
 
 	private Cell pickup_cell;
 	private Cell dropoff_cell;
-	private long currentTime;
+	private Date lastInserted;
 	
-	public RefreshRoute(Cell pickup_cell, Cell dropoff_cell, long current_time) {
+	
+	
+	public ActivateRoute(Cell pickup_cell, Cell dropoff_cell, Date lastInserted) {
 		this.pickup_cell = pickup_cell;
 		this.dropoff_cell = dropoff_cell;
-		this.currentTime = current_time;
+		this.lastInserted = lastInserted;
 	}
 	public Cell getPickup_cell() {
 		return pickup_cell;
@@ -27,14 +29,12 @@ public class RefreshRoute {
 	public void setDropoff_cell(Cell dropoff_cell) {
 		this.dropoff_cell = dropoff_cell;
 	}
-	public long getCurrentTime() {
-		return currentTime;
+	public Date getLastInserted() {
+		return lastInserted;
 	}
-	public void setCurrentTime(long current_time) {
-		this.currentTime = current_time;
+	public void setLastInserted(Date lastInserted) {
+		this.lastInserted = lastInserted;
 	}
-	
-	
 	
 	
 }

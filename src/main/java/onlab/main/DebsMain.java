@@ -2,6 +2,7 @@ package onlab.main;
 
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.concurrent.TimeUnit;
@@ -58,7 +59,7 @@ public class DebsMain {
 		// Task1
 		SortedSet<Route> mostFrequentRoutes = new FrequentRoutesToplistSet<Route>();
 		// Task2
-		SortedSet<AreaWithProfit> mostProfitableAreas = new ProfitableAreaToplistSet<AreaWithProfit>();
+		ProfitableAreaToplistSet<AreaWithProfit> mostProfitableAreas = new ProfitableAreaToplistSet<AreaWithProfit>();
 
 		// Adding global toplists to the session
 		kSession.setGlobal("mostFrequentRoutes", mostFrequentRoutes);
@@ -71,19 +72,40 @@ public class DebsMain {
 		SessionPseudoClock clock = kSession.getSessionClock();
 		clock.advanceTime(previousTimeInMillis, TimeUnit.MILLISECONDS);
 
-		while (dataFileParser.hasNextLine()) {
+		long linecounter = 0;
+		List<Long> averages = new ArrayList<Long>();
+		long realTime = System.currentTimeMillis();
+		while (dataFileParser.hasNextLine() && linecounter < 100000) {
+			
 			taxiLogs = dataFileParser.parseNextLinesFromCSVGroupedByDropoffDate();
+		
 			long currentTimeInMillis = taxiLogs.get(0).getDropoff_datetime().getTime();
-			stepXSeconds(kSession, clock, (currentTimeInMillis-previousTimeInMillis) / 1000);
+			
+			//stepXSeconds(kSession, clock, (currentTimeInMillis-previousTimeInMillis) / 1000);
+			
+
+			clock.advanceTime(currentTimeInMillis - previousTimeInMillis, TimeUnit.MILLISECONDS);
+			kSession.insert(new Tick(clock.getCurrentTime()));
+			kSession.fireAllRules();
 			for (TaxiLog tlog : taxiLogs) {
 				tlog.setInserted(System.currentTimeMillis());
 				kSession.insert(tlog);
+				linecounter++;
+				kSession.fireAllRules();
+				if(linecounter % 1000 == 0){
+					averages.add(System.currentTimeMillis() - realTime);
+					realTime = System.currentTimeMillis();
+				}
 			}
-			kSession.fireAllRules();
+		
+			
 			previousTimeInMillis = currentTimeInMillis;
 			System.out.println(mostProfitableAreas);
 			
 			
+		}
+		for(int i = 0 ; i < averages.size() ; i++){
+			System.out.println((i*1000)+": " + averages.get(i));
 		}
 
 		/*

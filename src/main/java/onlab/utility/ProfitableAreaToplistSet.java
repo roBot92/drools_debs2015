@@ -11,7 +11,7 @@ import onlab.event.AreaWithProfit;
 @SuppressWarnings("serial")
 public class ProfitableAreaToplistSet<T> extends TreeSet<AreaWithProfit> implements SortedSet<AreaWithProfit> {
 
-	private static int MAX_ELEMENT_NUMBER = 10;
+	private static int MAX_ELEMENT_NUMBER = 11;
 
 	private static final Logger LOGGER = Logger.getLogger(ProfitableAreaToplistSet.class.getName());
 
@@ -20,7 +20,9 @@ public class ProfitableAreaToplistSet<T> extends TreeSet<AreaWithProfit> impleme
 
 		Iterator<AreaWithProfit> descIterator = this.descendingIterator();
 		if (this.size() >= MAX_ELEMENT_NUMBER && descIterator.next().compareTo(area) == -1) {
-			return false;
+			if (area.getDelay() == -1) {
+				area.setDelay(System.currentTimeMillis() - area.getInsertedForDelay());
+			}
 		}
 		Iterator<AreaWithProfit> i = this.iterator();
 
@@ -31,7 +33,7 @@ public class ProfitableAreaToplistSet<T> extends TreeSet<AreaWithProfit> impleme
 				break;
 			}
 		}
-		
+
 		boolean result = super.add(area);
 
 		if (this.size() > MAX_ELEMENT_NUMBER) {
@@ -40,7 +42,7 @@ public class ProfitableAreaToplistSet<T> extends TreeSet<AreaWithProfit> impleme
 			i.remove();
 		}
 
-		if(area.getDelay() == 0){
+		if (area.getDelay() == -1) {
 			area.setDelay(System.currentTimeMillis() - area.getInsertedForDelay());
 		}
 		return result;
@@ -69,34 +71,46 @@ public class ProfitableAreaToplistSet<T> extends TreeSet<AreaWithProfit> impleme
 			builder.append((counter++) + "NULL" + "\n");
 		}
 
+		builder.append("Average delay: " + getAverageDelay() + " ms");
 		return builder.toString();
 
 	}
 
 	public AreaWithProfit get(int index) {
-		if (index >=  this.size()) {
+		if (index >= this.size()) {
 			return null;
 		}
 		Iterator<AreaWithProfit> iterator = this.iterator();
-		for(int i = 0 ; i < index ; i++){
+		for (int i = 0; i < index; i++) {
 			iterator.next();
 		}
 		return iterator.next();
-		
+
 	}
-	@Override
-	public void clear(){
-		super.clear();
+
+	public long getAverageDelay() {
+		long sumDelay = 0;
+		for (AreaWithProfit area : this) {
+			sumDelay += area.getDelay();
+		}
+
+		return this.size() == 0 ? 0 : sumDelay / this.size();
 	}
 
 	@Override
-	public boolean addAll(Collection<? extends AreaWithProfit> arg0) {
-		long starttime = System.currentTimeMillis();
-		boolean result = super.addAll(arg0);
-		LOGGER.info(this.getClass().getName() + " addAll method length: "+ (System.currentTimeMillis() - starttime) + " ms");
-		return result;
-	}
-	
-	
+	public boolean contains(Object o) {
+		if (o == null || !(o instanceof AreaWithProfit)) {
+			return false;
+		}
 
+		AreaWithProfit area = (AreaWithProfit) o;
+		for (AreaWithProfit iArea : this) {
+			if (iArea.getCell() == area.getCell()) {
+				return true;
+			}
+
+		}
+
+		return false;
+	}
 }

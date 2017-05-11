@@ -7,32 +7,32 @@ import onlab.positioning.Cell;
 
 public class Route implements Comparable<Route> {
 
-	private Cell pickup_Cell;
-	private Cell dropoff_Cell;
+	private Cell pickup_cell;
+	private Cell dropoff_cell;
 	private long frequency;
 	private Date lastDropoffTime;
 
 	public Route(Cell pickup_Cell, Cell dropoff_Cell, Date lastDropoffTime, long frequency) {
-		this.pickup_Cell = pickup_Cell;
-		this.dropoff_Cell = dropoff_Cell;
+		this.pickup_cell = pickup_Cell;
+		this.dropoff_cell = dropoff_Cell;
 		this.frequency = frequency;
 		this.lastDropoffTime = lastDropoffTime;
 	}
 
-	public Cell getPickup_Cell() {
-		return pickup_Cell;
+	public Cell getPickup_cell() {
+		return pickup_cell;
 	}
 
-	public void setPickup_Cell(Cell pickup_Cell) {
-		this.pickup_Cell = pickup_Cell;
+	public void setPickup_cell(Cell pickup_Cell) {
+		this.pickup_cell = pickup_Cell;
 	}
 
-	public Cell getDropoff_Cell() {
-		return dropoff_Cell;
+	public Cell getDropoff_cell() {
+		return dropoff_cell;
 	}
 
-	public void setDropoff_Cell(Cell dropoff_Cell) {
-		this.dropoff_Cell = dropoff_Cell;
+	public void setDropoff_cell(Cell dropoff_Cell) {
+		this.dropoff_cell = dropoff_Cell;
 	}
 
 	public long getFrequency() {
@@ -55,10 +55,10 @@ public class Route implements Comparable<Route> {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((dropoff_Cell == null) ? 0 : dropoff_Cell.hashCode());
+		result = prime * result + ((dropoff_cell == null) ? 0 : dropoff_cell.hashCode());
 		result = prime * result + (int) (frequency ^ (frequency >>> 32));
 		result = prime * result + ((lastDropoffTime == null) ? 0 : lastDropoffTime.hashCode());
-		result = prime * result + ((pickup_Cell == null) ? 0 : pickup_Cell.hashCode());
+		result = prime * result + ((pickup_cell == null) ? 0 : pickup_cell.hashCode());
 		return result;
 	}
 
@@ -71,10 +71,10 @@ public class Route implements Comparable<Route> {
 		if (getClass() != obj.getClass())
 			return false;
 		Route other = (Route) obj;
-		if (dropoff_Cell == null) {
-			if (other.dropoff_Cell != null)
+		if (dropoff_cell == null) {
+			if (other.dropoff_cell != null)
 				return false;
-		} else if (!dropoff_Cell.equals(other.dropoff_Cell))
+		} else if (!dropoff_cell.equals(other.dropoff_cell))
 			return false;
 		if (frequency != other.frequency)
 			return false;
@@ -83,10 +83,10 @@ public class Route implements Comparable<Route> {
 				return false;
 		} else if (!lastDropoffTime.equals(other.lastDropoffTime))
 			return false;
-		if (pickup_Cell == null) {
-			if (other.pickup_Cell != null)
+		if (pickup_cell == null) {
+			if (other.pickup_cell != null)
 				return false;
-		} else if (!pickup_Cell.equals(other.pickup_Cell))
+		} else if (!pickup_cell.equals(other.pickup_cell))
 			return false;
 		return true;
 	}
@@ -113,7 +113,7 @@ public class Route implements Comparable<Route> {
 	@Override
 	public String toString() {
 		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-		return "Route - Pickup cell:" + pickup_Cell + " Dropoff cell:" + dropoff_Cell + " - Frequency:" + frequency
+		return "Route - Pickup cell:" + pickup_cell + " Dropoff cell:" + dropoff_cell + " - Frequency:" + frequency
 				+ " - Last Dropoff Time: " + df.format(lastDropoffTime);
 	}
 

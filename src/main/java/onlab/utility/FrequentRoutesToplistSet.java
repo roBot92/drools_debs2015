@@ -21,8 +21,8 @@ public class FrequentRoutesToplistSet<T extends Route> extends TreeSet<Route> im
 
 		while (i.hasNext()) {
 			Route iRoute = i.next();
-			if (iRoute.getPickup_Cell() == route.getPickup_Cell()
-					&& iRoute.getDropoff_Cell() == route.getDropoff_Cell()) {
+			if (iRoute.getPickup_cell() == route.getPickup_cell()
+					&& iRoute.getDropoff_cell() == route.getDropoff_cell()) {
 				i.remove();
 				break;
 			}
@@ -38,12 +38,12 @@ public class FrequentRoutesToplistSet<T extends Route> extends TreeSet<Route> im
 		return result;
 	}
 
-	public void decreaseRouteFrequency(Cell pickupCell, Cell dropoffCell) {
+	/*public void decreaseRouteFrequency(Cell pickupCell, Cell dropoffCell) {
 		Route decreasable = null;
 		Iterator<Route> iterator = this.iterator();
 		while (iterator.hasNext()) {
 			Route route = iterator.next();
-			if (route.getPickup_Cell().equals(pickupCell) && route.getDropoff_Cell().equals(dropoffCell)) {
+			if (route.getPickup_cell().equals(pickupCell) && route.getDropoff_cell().equals(dropoffCell)) {
 				decreasable = route;
 				iterator.remove();
 				break;
@@ -57,7 +57,7 @@ public class FrequentRoutesToplistSet<T extends Route> extends TreeSet<Route> im
 			}
 		}
 
-	}
+	}*/
 
 	@Override
 	public String toString() {
@@ -87,12 +87,15 @@ public class FrequentRoutesToplistSet<T extends Route> extends TreeSet<Route> im
 		return iterator.next();
 	}
 
-	public boolean containsRoute(Cell pickup, Cell dropoff) {
-		if (this.size() == 0) {
+	@Override
+	public boolean contains(Object o) {
+		if (o == null || !(o instanceof Route)) {
 			return false;
 		}
-		for (Route route : this) {
-			if (route.getPickup_Cell() == pickup && route.getDropoff_Cell() == dropoff) {
+		
+		Route route = (Route)o;
+		for (Route iRoute : this) {
+			if (iRoute.getPickup_cell() == route.getPickup_cell() && iRoute.getDropoff_cell() == route.getDropoff_cell()) {
 				return true;
 			}
 		}

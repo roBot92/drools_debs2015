@@ -50,7 +50,7 @@ public class Task2Test {
 
 		config.setOption(ClockTypeOption.get("pseudo"));
 
-		kSession = kContainer.newKieSession("ksession-rules", config);
+		kSession = kContainer.newKieSession("ksession-rules2", config);
 		clock = kSession.getSessionClock();
 		// calendar =
 		// Calendar.getInstance().setTimeInMillis(clock.getCurrentTime());
@@ -163,7 +163,7 @@ public class Task2Test {
 
 		assertTrue("check1", area.equals(toplist.get(0)) && toplist.size() == 1);
 
-		clock.advanceTime(20, TimeUnit.MINUTES);
+		clock.advanceTime(15, TimeUnit.MINUTES);
 		kSession.insert(new Tick(clock.getCurrentTime()));
 		kSession.fireAllRules();
 
@@ -191,7 +191,7 @@ public class Task2Test {
 				setUpTaxilog(cells.get(7), cells.get(3), BigDecimal.TEN, BigDecimal.TEN, "8"),
 				setUpTaxilog(cells.get(8), cells.get(2), BigDecimal.TEN, BigDecimal.TEN, "9"),
 				setUpTaxilog(cells.get(9), cells.get(0), BigDecimal.TEN, BigDecimal.TEN, "10"),
-				setUpTaxilog(cells.get(10), cells.get(0), BigDecimal.ONE, BigDecimal.ONE, "10"));
+				setUpTaxilog(cells.get(10), cells.get(0), BigDecimal.ONE, BigDecimal.ONE, "11"));
 
 		clock.advanceTime(1, TimeUnit.SECONDS);
 
@@ -200,6 +200,7 @@ public class Task2Test {
 			tlogs.get(i).setInserted(System.currentTimeMillis());
 			kSession.insert(tlogs.get(i));
 			clock.advanceTime(1, TimeUnit.MINUTES);
+			kSession.fireAllRules();
 
 		}
 		
@@ -207,15 +208,15 @@ public class Task2Test {
 		kSession.insert(new Tick(clock.getCurrentTime()));
 		kSession.fireAllRules();*/
 		
-		clock.advanceTime(5, TimeUnit.MINUTES);
-		kSession.insert(new Tick(clock.getCurrentTime()));
+		clock.advanceTime(4, TimeUnit.MINUTES);
+		kSession.insert(new Tick(clock.getCurrentTime(), System.currentTimeMillis()));
 		kSession.fireAllRules();
 		
 		System.out.println(toplist);
 		
 		for(int i = 0 ; i < 15; i++){
 			clock.advanceTime(1, TimeUnit.MINUTES);
-			kSession.insert(new Tick(clock.getCurrentTime()));
+			kSession.insert(new Tick(clock.getCurrentTime(), System.currentTimeMillis()));
 			kSession.fireAllRules();
 			System.out.println(toplist);
 		}
