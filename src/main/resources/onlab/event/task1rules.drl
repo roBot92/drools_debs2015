@@ -11,7 +11,7 @@ import onlab.positioning.*
 import org.kie.api.runtime.rule.QueryResults
 import java.math.BigDecimal
 import java.util.ArrayList
-import onlab.utility.CustomTreeMultiset
+//import onlab.utility.CustomTreeMultiset
 
 
 
@@ -24,7 +24,6 @@ global onlab.utility.FrequentRoutesToplistSet mostFrequentRoutes
 declare TaxiLog
 @role(event)
 @timestamp(dropoff_datetime)
-@expires( 31m )
 end
 
 declare Tick
@@ -36,10 +35,12 @@ end
 
 declare ActivateRoute
 @role(fact)
+//@expires(1s)
 end
 
 declare RefreshRoute
-@role(fact)
+@role(event)
+@expires(1s)
 end
 
 declare Route
@@ -48,25 +49,34 @@ declare Route
 end
 
 declare ReOrderRoutes
-@role(event)
-@expires(1s)
+@role(fact)
+//@expires(1s)
+end
+
+
+rule task1_removeInvalidTaxiLog
+salience 1
+	when
+		$tlog: TaxiLog(pickup_cell == null || dropoff_cell == null)
+	then
+		retract($tlog);
 end
 
 rule task1_newTaxiLog
 salience 0
 	when
-			$tlog:TaxiLog(!processed, $pickupCell: pickup_cell, $dropoffCell: dropoff_cell, $dropoffDate: dropoff_datetime)
+			$tlog:TaxiLog( !processed, $pickupCell: pickup_cell, $dropoffCell: dropoff_cell, $dropoffDate: dropoff_datetime, $inserted : inserted)
 	then
+			
+			insertLogical(new ActivateRoute($pickupCell, $dropoffCell,$dropoffDate));
+			insertLogical(new RefreshRoute($pickupCell, $dropoffCell, $dropoffDate.getTime(), $inserted));
 			$tlog.setProcessed(true);
 			update($tlog);
-			insertLogical(new ActivateRoute($pickupCell, $dropoffCell,$dropoffDate));
-			insert(new RefreshRoute($pickupCell, $dropoffCell, $dropoffDate.getTime()));
-			
 end
 
  
 rule task1_activateRoute
-salience 11
+salience 10
 	when
 		ActivateRoute($pickupCell : pickup_cell, $dropoffCell: dropoff_cell, $ctime : lastInserted)
 		not Route($pickupCell == pickup_cell, $dropoffCell == dropoff_cell)
@@ -76,27 +86,31 @@ end
 
 
 rule task1_refreshRoute
-salience 11
+salience 20
 	when
-		 $ref:RefreshRoute($pickupCell : pickup_cell, $dropoffCell : dropoff_cell, $ctime: currentTime )
+		 $ref:RefreshRoute($pickupCell : pickup_cell, $dropoffCell : dropoff_cell, $ctime: currentTime , $insertedForDelay : insertedForDelay )
 		 $route: Route($pickupCell == pickup_cell, $dropoffCell == dropoff_cell)
 		 $countOfRoutes : java.lang.Number() from accumulate (
-			TaxiLog($pickupCell == pickup_cell, $dropoffCell == dropoff_cell) over window:time(30m),
+			TaxiLog($pickupCell == pickup_cell, $dropoffCell == dropoff_cell ) over window:time(30m),
 			count()
 		 ) 
 	then
 		
 		 if($ctime != -1){
 			$route.setLastDropoffTime(new java.util.Date($ctime));
+			$route.setInsertedForDelay($insertedForDelay);
+			$route.setDelay(-1);
 		 }
 		 $route.setFrequency($countOfRoutes.longValue());
 		 update($route);
 		 mostFrequentRoutes.add($route);
 		 retract($ref);
+		
+		
 end
 
 rule task1_reOrderRoutes
-salience -2
+salience -1
 	when
 		ReOrderRoutes()
 		$allReorderCollection: java.util.ArrayList() from collect (ReOrderRoutes())
@@ -110,33 +124,44 @@ salience -2
 		 }
 		 for(Object $reorder : $allReorderCollection){
 			retract($reorder);
-		 }
-		 $allReorderCollection.clear();
+		 }		 //$allReorderCollection.clear();
 end
 
 rule task1_deactivateRoute
-salience -5
+salience 20
 	when
 		Tick($ctime : currentTime)
-		$route:Route(lastDropoffTime.getTime() + 30 * 60 * 1000 < $ctime)
+		$route:Route(lastDropoffTime.getTime() + 30 * 60 * 1000 < $ctime || frequency == 0)
 	then
 		retract($route);
-		if(mostFrequentRoutes.contains($route)){
+	//	if(mostFrequentRoutes.contains($route)){
+	//		insert(new ReOrderRoutes());
+	//	}
+		
+end
+
+rule task1_removeTaxiLogsFromRoute
+salience 4
+	when
+		Tick($ctime : currentTime)
+		$tlogs: ArrayList() from collect( TaxiLog( dropoff_datetime.getTime() + 30 * 60 *1000 < $ctime))
+	then
+		for(Object o : $tlogs){
+			TaxiLog $tlog = (TaxiLog)o;
+			Cell $pickupCell = $tlog.getPickup_cell();
+			Cell $dropoffCell = $tlog.getDropoff_cell();
+			retract($tlog);
+			insertLogical(new RefreshRoute($pickupCell, $dropoffCell, -1, -1));
+		}
+		
+		
+		if($tlogs != null && !$tlogs.isEmpty()){
 			insert(new ReOrderRoutes());
 		}
 		
 end
 
-rule task1_removeTaxiLogFromRoute
-salience 0
-	when
-		Tick($ctime : currentTime)
-		$tlog:TaxiLog($pickupCell: pickup_cell, $dropoffCell: dropoff_cell, dropoff_datetime.getTime() + 30 * 60 *100 < $ctime)
-	then
-		retract($tlog);
-		insert(new RefreshRoute($pickupCell, $dropoffCell, -1));
-		insert(new ReOrderRoutes());
-end
+
 
 //For debug
 query "routes"  ()
@@ -146,4 +171,8 @@ end
 
 query "taxis"()
 	taxis: TaxiLog()
+end
+
+query "refresh"
+	refresh: RefreshRoute()
 end

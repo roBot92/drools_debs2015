@@ -44,9 +44,9 @@ end
 
 
 declare RefreshArea
-@role(fact)
-/*@timestamp(currentTime)
-@expires(1s)*/
+@role(event)
+@timestamp(currentTime)
+@expires(1s)
 end
 
 declare ActivateArea
@@ -63,6 +63,13 @@ declare AreaWithProfit
 @timestamp(lastInserted)
 end
 
+rule task1_removeInvalidTaxiLog
+salience 1
+	when
+		$tlog: TaxiLog(pickup_cell == null || dropoff_cell == null)
+	then
+		retract($tlog);
+end
 rule "task2_new_TaxiLog_rule" 
 salience 0
     when

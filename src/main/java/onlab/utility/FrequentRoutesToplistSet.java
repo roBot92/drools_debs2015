@@ -3,6 +3,8 @@ package onlab.utility;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import onlab.event.Route;
 import onlab.positioning.*;
 
 @SuppressWarnings("serial")
@@ -14,9 +16,14 @@ public class FrequentRoutesToplistSet<T extends Route> extends TreeSet<Route> im
 	public boolean add(Route route) {
 
 		Iterator<Route> descIterator = this.descendingIterator();
+		if(route.getDelay() == -1){
+			route.setDelay(System.currentTimeMillis() - route.getInsertedForDelay());
+		}
 		if (this.size() >= MAX_ELEMENT_NUMBER && descIterator.next().compareTo(route) == -1) {
 			return false;
 		}
+		
+		
 		Iterator<Route> i = this.iterator();
 
 		while (i.hasNext()) {

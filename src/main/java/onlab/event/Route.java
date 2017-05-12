@@ -1,4 +1,4 @@
-package onlab.positioning;
+package onlab.event;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -11,6 +11,8 @@ public class Route implements Comparable<Route> {
 	private Cell dropoff_cell;
 	private long frequency;
 	private Date lastDropoffTime;
+	private long delay;
+	private long insertedForDelay;
 
 	public Route(Cell pickup_Cell, Cell dropoff_Cell, Date lastDropoffTime, long frequency) {
 		this.pickup_cell = pickup_Cell;
@@ -49,6 +51,24 @@ public class Route implements Comparable<Route> {
 
 	public void setLastDropoffTime(Date lastDropoffTime) {
 		this.lastDropoffTime = lastDropoffTime;
+	}
+	
+	
+
+	public long getDelay() {
+		return delay;
+	}
+
+	public void setDelay(long delay) {
+		this.delay = delay;
+	}
+
+	public long getInsertedForDelay() {
+		return insertedForDelay;
+	}
+
+	public void setInsertedForDelay(long insertedForDelay) {
+		this.insertedForDelay = insertedForDelay;
 	}
 
 	@Override
@@ -109,12 +129,14 @@ public class Route implements Comparable<Route> {
 			return -1;
 		}
 	}
+	
 
 	@Override
 	public String toString() {
-		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		return "Route - Pickup cell:" + pickup_cell + " Dropoff cell:" + dropoff_cell + " - Frequency:" + frequency
-				+ " - Last Dropoff Time: " + df.format(lastDropoffTime);
+				+ " - Last Dropoff Time: " + df.format(lastDropoffTime) + " Delay: " + delay +" ms";
 	}
 
+	
 }

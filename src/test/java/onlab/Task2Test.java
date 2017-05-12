@@ -50,7 +50,7 @@ public class Task2Test {
 
 		config.setOption(ClockTypeOption.get("pseudo"));
 
-		kSession = kContainer.newKieSession("ksession-rules2", config);
+		kSession = kContainer.newKieSession("ksession-rules", config);
 		clock = kSession.getSessionClock();
 		// calendar =
 		// Calendar.getInstance().setTimeInMillis(clock.getCurrentTime());

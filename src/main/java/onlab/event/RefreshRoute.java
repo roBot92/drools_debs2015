@@ -9,11 +9,13 @@ public class RefreshRoute {
 	private Cell pickup_cell;
 	private Cell dropoff_cell;
 	private long currentTime;
+	private long insertedForDelay;
 	
-	public RefreshRoute(Cell pickup_cell, Cell dropoff_cell, long current_time) {
+	public RefreshRoute(Cell pickup_cell, Cell dropoff_cell, long current_time, long insertedForDelay) {
 		this.pickup_cell = pickup_cell;
 		this.dropoff_cell = dropoff_cell;
 		this.currentTime = current_time;
+		this.insertedForDelay = insertedForDelay;
 	}
 	public Cell getPickup_cell() {
 		return pickup_cell;
@@ -32,6 +34,12 @@ public class RefreshRoute {
 	}
 	public void setCurrentTime(long current_time) {
 		this.currentTime = current_time;
+	}
+	public long getInsertedForDelay() {
+		return insertedForDelay;
+	}
+	public void setInsertedForDelay(long insertedForDelay) {
+		this.insertedForDelay = insertedForDelay;
 	}
 	
 	
