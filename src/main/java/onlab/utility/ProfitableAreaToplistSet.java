@@ -1,10 +1,9 @@
 package onlab.utility;
 
-import java.util.Collection;
+
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.logging.Logger;
 
 import onlab.event.AreaWithProfit;
 
@@ -13,7 +12,7 @@ public class ProfitableAreaToplistSet<T> extends TreeSet<AreaWithProfit> impleme
 
 	private static int MAX_ELEMENT_NUMBER = 11;
 
-	private static final Logger LOGGER = Logger.getLogger(ProfitableAreaToplistSet.class.getName());
+
 
 	@Override
 	public boolean add(AreaWithProfit area) {

@@ -5,7 +5,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import onlab.event.Route;
-import onlab.positioning.*;
 
 @SuppressWarnings("serial")
 public class FrequentRoutesToplistSet<T extends Route> extends TreeSet<Route> implements SortedSet<Route> {

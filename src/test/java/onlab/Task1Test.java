@@ -23,10 +23,9 @@ import onlab.positioning.Cell;
 import onlab.event.Route;
 import onlab.event.TaxiLog;
 import onlab.event.Tick;
-import onlab.positioning.Cell;
 import onlab.utility.FrequentRoutesToplistSet;
 
-@SuppressWarnings("restriction")
+
 public class Task1Test {
 
 	private FrequentRoutesToplistSet<Route> toplist;
@@ -227,7 +226,7 @@ public class Task1Test {
 		kSession.insert(tlogs.get(20));
 		kSession.fireAllRules();
 
-		 System.out.println("sliding second: "+toplist);
+		
 		Route route = new Route(cells.get(2), cells.get(5), tlogs.get(20).getDropoff_datetime(), -1);
 
 		assertTrue("check2", toplist.size() == 10 && kSession.getQueryResults("taxis").size() == 21
@@ -235,7 +234,6 @@ public class Task1Test {
 		clock.advanceTime(15*60+1, TimeUnit.SECONDS);
 		kSession.insert(new Tick(clock.getCurrentTime()));
 		kSession.fireAllRules();
-		System.out.println("sliding third: "+toplist);
 		assertTrue("check3", toplist.size() == 1 && kSession.getQueryResults("taxis").size() == 1
 				&& kSession.getQueryResults("routes").size() == 1 && toplist.contains(route));
 	}

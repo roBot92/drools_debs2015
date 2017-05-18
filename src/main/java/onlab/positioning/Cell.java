@@ -6,18 +6,14 @@ public class Cell {
 
 	private int x;
 	private int y;
-	private Coordinate coordinate; // todo kidob?
+//	private Coordinate coordinate; // todo kidob?
 	
-	//This constructor is only for tests!
-	public Cell(int x, int y){
+
+	
+	public Cell(int x, int y) {
 		this.x = x;
 		this.y = y;
-	}
-	
-	Cell(int x, int y, Coordinate coordinate) {
-		this.x = x;
-		this.y = y;
-		this.coordinate = coordinate;
+//		this.coordinate = coordinate;
 	}
 	
 	int getX() {
@@ -33,26 +29,17 @@ public class Cell {
 		this.y = y;
 	}
 
-	Coordinate getCoordinate() {
-		return coordinate;
-	}
-
-	void setCoordinate(Coordinate coordinate) {
-		this.coordinate = coordinate;
-	}
+	
 
 	@Override
 	public String toString() {
 		return "Cell("+getX()+","+getY()+")";
 	}
 
-	
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((coordinate == null) ? 0 : coordinate.hashCode());
 		result = prime * result + x;
 		result = prime * result + y;
 		return result;
@@ -67,17 +54,17 @@ public class Cell {
 		if (getClass() != obj.getClass())
 			return false;
 		Cell other = (Cell) obj;
-		if (coordinate == null) {
-			if (other.coordinate != null)
-				return false;
-		} else if (!coordinate.equals(other.coordinate))
-			return false;
 		if (x != other.x)
 			return false;
 		if (y != other.y)
 			return false;
 		return true;
 	}
+
+	
+
+
+	
 	
 	
 	

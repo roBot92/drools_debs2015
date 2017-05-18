@@ -3,9 +3,7 @@ package onlab.main;
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.concurrent.TimeUnit;
@@ -22,10 +20,11 @@ import onlab.event.Route;
 import onlab.event.TaxiLog;
 import onlab.event.Tick;
 import onlab.positioning.*;
+import onlab.utility.DataFileParser;
 import onlab.utility.FrequentRoutesToplistSet;
 import onlab.utility.ProfitableAreaToplistSet;
 
-@SuppressWarnings("restriction")
+
 public class DebsMain {
 
 	private static String DATA_FILE_URL = "C:\\Users\\Boti\\onlab\\onlab_tavasz\\src\\main\\resources\\data\\sorted_data.csv";
@@ -39,8 +38,8 @@ public class DebsMain {
 	public static void main(String[] args) throws FileNotFoundException, ParseException {
 		List<TaxiLog> taxiLogs = null;
 		CellHelper chelper = new CellHelper(FIRST_CELL_X, FIRST_CELL_Y,
-				SHIFT_X/*.divide(BigDecimal.valueOf(2))*/ ,
-				SHIFT_Y/*.divide(BigDecimal.valueOf(2))*/ , 300);
+				SHIFT_X.divide(BigDecimal.valueOf(2)) ,
+				SHIFT_Y.divide(BigDecimal.valueOf(2)), 600);
 
 		/*
 		 * try { taxiLogs =
@@ -84,8 +83,7 @@ public class DebsMain {
 		List<Long> timeDifferencesForAverages = new ArrayList<Long>();
 		timeDifferencesForAverages.add(previousTimeInMillis);
 		
-		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		Date closeTime = df.parse("2017-05-12 11:00:00");
+		
 		long realTime = System.currentTimeMillis();
 
 		while (dataFileParser.hasNextLine() && linecounter < 200000) {
@@ -108,15 +106,11 @@ public class DebsMain {
 					realTime = System.currentTimeMillis();
 				}
 			}
-	//		kSession.insert(new Tick(clock.getCurrentTime()));
+
 			kSession.fireAllRules();
 
 			previousTimeInMillis = currentTimeInMillis;
-			System.out.println(mostFrequentRoutes);
-			Date rtimeDate = new Date(realTime);
-			if(closeTime.before(rtimeDate)){
-				break;
-			}
+			System.out.println(mostProfitableAreas);
 			
 			
 

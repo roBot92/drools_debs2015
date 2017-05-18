@@ -50,7 +50,6 @@ end
 
 declare ReOrderRoutes
 @role(fact)
-//@expires(1s)
 end
 
 

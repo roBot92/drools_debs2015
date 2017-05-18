@@ -1,4 +1,4 @@
-
+/*
 //created on: 2017.03.29.
 package onlab.event
 
@@ -35,7 +35,6 @@ end
 
 declare RefreshRoute
 @role(fact)
-/*@timestamp(currentTime)*/
 end 
 
 
@@ -55,7 +54,6 @@ end
 
 declare ReOrderAreas
 @role(fact)
-/*@expires(1s)*/
 end
 
 declare AreaWithProfit
@@ -115,9 +113,7 @@ salience 20
         			result(list.getMedian())
         			)
        $taxiListOfArea: java.util.ArrayList() from collect (TaxiLog(dropoff_cell == $cell) over window:time(30m)) 
-     /*   $lastInserted: java.lang.Number() from accumulate(TaxiLog($dropoffTime : dropoff_datetime ,pickup_cell == $cell, !olderThanAQuarter),
-        												max($dropoffTime.getTime())
-        												)*/
+     
 	then	
 	
 		int $numOfEmptyTaxis= 0;
@@ -137,7 +133,7 @@ salience 20
 		//Új taxilog triggerelt, lastinserted és delay változik	
 		if($insertedForDelay != -1){
 			$area.setInsertedForDelay($insertedForDelay);
-			$area.setLastInserted($ctime/*new java.util.Date($lastInserted.longValue())*/);
+			$area.setLastInserted($ctime);
 			$area.setDelay(-1);
 		}
 			
@@ -214,17 +210,7 @@ salience -1
 			retract($reorder);
 		}
 		
-end	
-/*
-rule "task2_NoAreas"
-salience -1
-	when
-		ReOrderAreas()
-		not AreaWithProfit()
-	then
-		mostProfitableAreas.clear();
-		
-end	*/
+end
 
 
 
@@ -246,4 +232,4 @@ end
 query "taxis"()
 	taxis: TaxiLog()
 end
-
+*/

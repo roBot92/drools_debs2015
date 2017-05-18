@@ -16,8 +16,6 @@ public class CellHelper {
 			this.y = y;
 		}
 
-	
-
 		@Override
 		public int hashCode() {
 			final int prime = 31;
@@ -82,38 +80,27 @@ public class CellHelper {
 		for (int i = 1; i <= resolution; i++) {
 			for (int j = 1; j <= resolution; j++) {
 
-				// first x coordinate + (i-1)*xShift
-				BigDecimal coordinateX = FIRST_CELL_COORDINATE.getX()
-						.add(BigDecimal.valueOf(i - 1).multiply(xShift));
-				// first y coordinate - (j-1)*yShift
-				BigDecimal coordinateY = FIRST_CELL_COORDINATE.getY()
-						.subtract(BigDecimal.valueOf(j - 1).multiply(yShift));
-
-				cells.put(new Tuple(i, j), new Cell(i, j, new Coordinate(coordinateX, coordinateY)));
+				cells.put(new Tuple(i, j), new Cell(i, j));
 			}
 		}
 	}
 
 	public Cell getCell(Coordinate coordinate) {
 
-		
-		
 		BigDecimal yDifference = FIRST_CELL_COORDINATE.getY().subtract(coordinate.getY());
 		BigDecimal xDifference = coordinate.getX().subtract(FIRST_CELL_COORDINATE.getX());
-		
-		
 
-		int tupleY = yDifference.divide(yShift, BigDecimal.ROUND_HALF_UP).setScale(0, RoundingMode.HALF_UP).intValue() + 1;
-		int tupleX = xDifference.divide(xShift, BigDecimal.ROUND_HALF_UP).setScale(0, RoundingMode.HALF_UP).intValue() + 1;
+		int tupleY = yDifference.divide(yShift, BigDecimal.ROUND_HALF_UP).setScale(0, RoundingMode.HALF_UP).intValue()
+				+ 1;
+		int tupleX = xDifference.divide(xShift, BigDecimal.ROUND_HALF_UP).setScale(0, RoundingMode.HALF_UP).intValue()
+				+ 1;
 
-		if(tupleY < 1 || tupleY > resolution || tupleX < 1 || tupleY > resolution){
+		if (tupleY < 1 || tupleY > resolution || tupleX < 1 || tupleY > resolution) {
 			return null;
 		}
-		
-		return cells.get(new Tuple(tupleX, tupleY));
-	
-		
-	}
 
+		return cells.get(new Tuple(tupleX, tupleY));
+
+	}
 
 }

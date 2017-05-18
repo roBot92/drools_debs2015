@@ -2,9 +2,6 @@ package onlab.event;
 
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.logging.Logger;
-
-import onlab.main.DataFileParser;
 import onlab.positioning.Cell;
 
 public class AreaWithProfit implements Comparable<AreaWithProfit> {
