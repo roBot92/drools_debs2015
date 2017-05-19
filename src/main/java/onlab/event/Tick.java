@@ -25,14 +25,6 @@ public class Tick {
 	}
 
 
-	public long getInserted() {
-		return inserted;
-	}
-
-
-	public void setInserted(long inserted) {
-		this.inserted = inserted;
-	}
 	
 	
 	

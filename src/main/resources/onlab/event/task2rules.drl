@@ -126,9 +126,9 @@ salience 20
     		}
 		}
 		
-		BigDecimal $medianProfit = ((BigDecimal)$median).divide(($numOfEmptyTaxis == 0 ? BigDecimal.ONE : BigDecimal.valueOf($numOfEmptyTaxis)),2, BigDecimal.ROUND_HALF_UP);
+		BigDecimal $medianProfitIndex = ((BigDecimal)$median).divide(($numOfEmptyTaxis == 0 ? BigDecimal.ONE : BigDecimal.valueOf($numOfEmptyTaxis)),2, BigDecimal.ROUND_HALF_UP);
 		
-		$area.setMedianProfit($medianProfit);		
+		$area.setMedianProfitIndex($medianProfitIndex);		
 		
 		//Új taxilog triggerelt, lastinserted és delay változik	
 		if($insertedForDelay != -1){

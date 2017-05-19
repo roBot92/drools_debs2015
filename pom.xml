@@ -7,8 +7,8 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>1</groupId>
-	<artifactId>1</artifactId>
+	<groupId>onlab</groupId>
+	<artifactId>drools_debs2015_projekt</artifactId>
 	<version>1</version>
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>

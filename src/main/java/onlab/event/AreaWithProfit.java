@@ -7,14 +7,14 @@ import onlab.positioning.Cell;
 public class AreaWithProfit implements Comparable<AreaWithProfit> {
 
 	private Cell cell;
-	private BigDecimal medianProfit;
+	private BigDecimal medianProfitIndex;
 	private Date lastInserted;
 	private long delay;
 	private long insertedForDelay;
 
 	public AreaWithProfit(Cell cell, BigDecimal medianProfit, Date lastInserted) {
 		this.cell = cell;
-		this.medianProfit = medianProfit;
+		this.medianProfitIndex = medianProfit;
 		this.lastInserted = lastInserted;
 	}
 	
@@ -32,11 +32,11 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 	}
 
 	public BigDecimal getMedianProfit() {
-		return medianProfit;
+		return medianProfitIndex;
 	}
 
 	public void setMedianProfit(BigDecimal medianProfit) {
-		this.medianProfit = medianProfit;
+		this.medianProfitIndex = medianProfit;
 	}
 
 	public Date getLastInserted() {
@@ -53,7 +53,7 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 		int result = 1;
 		result = prime * result + ((cell == null) ? 0 : cell.hashCode());
 		result = prime * result + ((lastInserted == null) ? 0 : lastInserted.hashCode());
-		result = prime * result + ((medianProfit == null) ? 0 : medianProfit.hashCode());
+		result = prime * result + ((medianProfitIndex == null) ? 0 : medianProfitIndex.hashCode());
 		return result;
 	}
 
@@ -76,10 +76,10 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 				return false;
 		} else if (!lastInserted.equals(other.lastInserted))
 			return false;
-		if (medianProfit == null) {
-			if (other.medianProfit != null)
+		if (medianProfitIndex == null) {
+			if (other.medianProfitIndex != null)
 				return false;
-		} else if (medianProfit.compareTo(other.medianProfit) != 0)
+		} else if (medianProfitIndex.compareTo(other.medianProfitIndex) != 0)
 			return false;
 		return true;
 	}
@@ -96,11 +96,11 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 		if(otherMedian == null){
 			return -1;
 		}
-		else if( medianProfit == null){
+		else if( medianProfitIndex == null){
 			return 1;
 		}
-		if(medianProfit.compareTo(otherMedian) != 0){
-			return medianProfit.compareTo(otherMedian) * -1;
+		if(medianProfitIndex.compareTo(otherMedian) != 0){
+			return medianProfitIndex.compareTo(otherMedian) * -1;
 		}
 		
 		if(otherTime == null){
@@ -120,7 +120,7 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 
 	@Override
 	public String toString() {
-		return "Cell: " + this.cell + " - Median profit: " + this.medianProfit + " - Dropoff time: " + lastInserted + "Delay: " + delay + " ms";
+		return "Cell: " + this.cell + " - Median profit: " + this.medianProfitIndex + " - Dropoff time: " + lastInserted + "Delay: " + delay + " ms";
 	}
 
 	public long getDelay() {
