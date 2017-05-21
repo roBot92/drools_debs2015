@@ -1,4 +1,4 @@
-/*
+
 //created on: 2017.03.29.
 package onlab.event
 
@@ -33,19 +33,13 @@ declare Tick
 @expires( 1s )
 end
 
-declare RefreshRoute
-@role(fact)
-end 
-
 
 
 
 
 
 declare RefreshArea
-@role(event)
-@timestamp(currentTime)
-@expires(1s)
+@role(fact)
 end
 
 declare ActivateArea
@@ -57,8 +51,7 @@ declare ReOrderAreas
 end
 
 declare AreaWithProfit
-@role(event)
-@timestamp(lastInserted)
+@role(fact)
 end
 
 rule task1_removeInvalidTaxiLog
@@ -77,6 +70,7 @@ salience 0
      
       insertLogical(new ActivateArea($pickupCell, $currentTime));
       insertLogical(new RefreshArea($pickupCell,$currentTime, $inserted));  
+      insertLogical(new RefreshArea($dropoffCell,$currentTime, -1)); 
       insert(new ReOrderAreas());
       $tlog.setProcessed(true); 
       update($tlog);
@@ -98,10 +92,10 @@ end
 
 
 rule "task2_refreshAreaRule"
-salience 20
+salience 20 
 	when
 		$refresh:RefreshArea($ctime: currentTime, $cell:cell, $insertedForDelay : insertedForDelay )
-		$area:AreaWithProfit($cell == cell, lastInserted.getTime()+15*60*1000 >= $ctime.getTime())
+		$area:AreaWithProfit($cell == cell)
 
 		$median : java.lang.Number() from accumulate 
         			( TaxiLog($fare: fare_amount , $tip:tip_amount , pickup_cell == $cell, dropoff_datetime.getTime()+15*60*1000 >= $ctime.getTime()),
@@ -141,7 +135,7 @@ salience 20
 		update($area);
 		retract($refresh);
 end
-rule "task2_deactivateArea"
+rule "task2_deactivateAreaRule"
 salience 20
 	when
 	//	$ref:RefreshArea($ctime: currentTime, $cell:cell, insertedForDelay == -1 )
@@ -194,7 +188,7 @@ salience 4
 end
 
 //After all rules, we collect all ReOrderAreas rule, to ensure that we make reordering only once.
-rule "task2_ReorderAreas_rule"
+rule "task2_reorderAreasRule"
 salience -1
 	when
 		ReOrderAreas()
@@ -232,4 +226,4 @@ end
 query "taxis"()
 	taxis: TaxiLog()
 end
-*/
+

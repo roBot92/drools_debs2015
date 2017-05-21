@@ -1,4 +1,4 @@
-package onlab.utility;
+	package onlab.utility;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -172,10 +172,7 @@ public class DataFileParser {
 		return parseCSVIntoTaxiLogList(fileName, delimiter, columncount, rowcount, chelper, 0);
 	}
 
-	public static long getSTART_TIME_IN_MILLISECONDS() {
-		return START_TIME_IN_MILLISECONDS;
-	}
-
+	
 	public void reopenScanner(String fileName) throws FileNotFoundException {
 		closeScanner();
 

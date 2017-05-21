@@ -11,7 +11,7 @@ public class Route implements Comparable<Route> {
 	private Cell dropoff_cell;
 	private long frequency;
 	private Date lastDropoffTime;
-	private long delay;
+	private long delay = -1;
 	private long insertedForDelay;
 
 	public Route(Cell pickup_Cell, Cell dropoff_Cell, Date lastDropoffTime, long frequency) {

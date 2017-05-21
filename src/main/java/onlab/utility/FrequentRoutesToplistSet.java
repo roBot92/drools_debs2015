@@ -44,26 +44,7 @@ public class FrequentRoutesToplistSet<T extends Route> extends TreeSet<Route> im
 		return result;
 	}
 
-	/*public void decreaseRouteFrequency(Cell pickupCell, Cell dropoffCell) {
-		Route decreasable = null;
-		Iterator<Route> iterator = this.iterator();
-		while (iterator.hasNext()) {
-			Route route = iterator.next();
-			if (route.getPickup_cell().equals(pickupCell) && route.getDropoff_cell().equals(dropoffCell)) {
-				decreasable = route;
-				iterator.remove();
-				break;
-			}
-		}
-
-		if (decreasable != null) {
-			decreasable.setFrequency(decreasable.getFrequency() - 1);
-			if (decreasable.getFrequency() > 0) {
-				super.add(decreasable);
-			}
-		}
-
-	}*/
+	
 
 	@Override
 	public String toString() {

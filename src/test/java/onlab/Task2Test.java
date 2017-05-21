@@ -76,7 +76,7 @@ public class Task2Test {
 		clock.advanceTime(60, TimeUnit.SECONDS);
 		tlog2.setDropoff_datetime(new Date(clock.getCurrentTime()));
 		area.setLastInserted(new Date(clock.getCurrentTime()));
-		area.setMedianProfit(BigDecimal.valueOf(6.5));
+		area.setMedianProfitIndex(BigDecimal.valueOf(6.5));
 
 		kSession.insert(tlog2);
 		kSession.fireAllRules();
@@ -137,7 +137,7 @@ public class Task2Test {
 		kSession.fireAllRules();
 
 		area1.setLastInserted(new Date(clock.getCurrentTime()));
-		area1.setMedianProfit(BigDecimal.valueOf(11));
+		area1.setMedianProfitIndex(BigDecimal.valueOf(11));
 		assertTrue("secondCheck", toplist.size() == 2 && area1.equals(toplist.get(0)) && area2.equals(toplist.get(1)));
 	}
 
@@ -166,7 +166,7 @@ public class Task2Test {
 		kSession.insert(new Tick(clock.getCurrentTime()));
 		kSession.fireAllRules();
 
-		area.setMedianProfit(BigDecimal.valueOf(11));
+		area.setMedianProfitIndex(BigDecimal.valueOf(11));
 
 		assertTrue("check2", area.equals(toplist.get(0)) && toplist.size() == 1);
 
@@ -176,7 +176,7 @@ public class Task2Test {
 
 		assertTrue("check3", toplist.isEmpty());
 	}
-
+	
 	@Test
 	public void overFlowingAndAging_test() {
 		List<TaxiLog> tlogs = Arrays.asList(

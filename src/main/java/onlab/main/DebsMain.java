@@ -38,7 +38,7 @@ public class DebsMain {
 	public static void main(String[] args) throws FileNotFoundException, ParseException {
 		List<TaxiLog> taxiLogs = null;
 		CellHelper chelper = new CellHelper(FIRST_CELL_X, FIRST_CELL_Y,
-				SHIFT_X.divide(BigDecimal.valueOf(2)) ,
+				SHIFT_X.divide(BigDecimal.valueOf(2)),
 				SHIFT_Y.divide(BigDecimal.valueOf(2)), 600);
 
 		/*

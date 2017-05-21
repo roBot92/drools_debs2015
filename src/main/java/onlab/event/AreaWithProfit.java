@@ -31,11 +31,11 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 		this.cell = cell;
 	}
 
-	public BigDecimal getMedianProfit() {
+	public BigDecimal getMedianProfitIndex() {
 		return medianProfitIndex;
 	}
 
-	public void setMedianProfit(BigDecimal medianProfit) {
+	public void setMedianProfitIndex(BigDecimal medianProfit) {
 		this.medianProfitIndex = medianProfit;
 	}
 
@@ -90,7 +90,7 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 			return 0;
 		}
 
-		BigDecimal otherMedian = area.getMedianProfit();
+		BigDecimal otherMedian = area.getMedianProfitIndex();
 		Date otherTime = area.getLastInserted();
 		
 		if(otherMedian == null){

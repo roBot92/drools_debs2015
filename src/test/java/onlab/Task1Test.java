@@ -138,7 +138,7 @@ public class Task1Test {
 		check = toplist.size() == 2 && route2.equals(toplist.get(1)) && route3.equals(toplist.get(0));
 		assertTrue("check1", check);
 
-		kSession.insert(tlog1);
+		//kSession.insert(tlog1);
 	}
 
 	@Test

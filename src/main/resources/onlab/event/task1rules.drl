@@ -1,4 +1,4 @@
-
+/*
 //created on: 2017.03.29.
 package onlab.event
 
@@ -35,17 +35,16 @@ end
 
 declare ActivateRoute
 @role(fact)
-//@expires(1s)
 end
 
 declare RefreshRoute
-@role(event)
-@expires(1s)
+@role(fact)
+//@expires(1s)
 end
 
 declare Route
-@role(event)
-@timestamp(lastDropoffTime)
+@role(fact)
+//@timestamp(lastDropoffTime)
 end
 
 declare ReOrderRoutes
@@ -103,8 +102,7 @@ salience 20
 		 $route.setFrequency($countOfRoutes.longValue());
 		 update($route);
 		 mostFrequentRoutes.add($route);
-		 retract($ref);
-		
+		retract($ref);
 		
 end
 
@@ -133,9 +131,7 @@ salience 20
 		$route:Route(lastDropoffTime.getTime() + 30 * 60 * 1000 < $ctime || frequency == 0)
 	then
 		retract($route);
-	//	if(mostFrequentRoutes.contains($route)){
-	//		insert(new ReOrderRoutes());
-	//	}
+		insert(new ReOrderRoutes());
 		
 end
 
@@ -174,4 +170,4 @@ end
 
 query "refresh"
 	refresh: RefreshRoute()
-end
+end*/
