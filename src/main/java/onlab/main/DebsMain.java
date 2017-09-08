@@ -27,7 +27,7 @@ import onlab.utility.ProfitableAreaToplistSet;
 
 public class DebsMain {
 
-	private static String DATA_FILE_URL = "C:\\Users\\Boti\\onlab\\onlab_tavasz\\src\\main\\resources\\data\\sorted_data.csv";
+	private static String DATA_FILE_URL = "C:\\Users\\Boti\\git\\onlab_tavasz\\src\\main\\resources\\onlab\\sorted_data.csv";
 	private static String DELIMITER = ",";
 	private static int columncount = 17;
 	private static BigDecimal FIRST_CELL_X = BigDecimal.valueOf(-74.913585);

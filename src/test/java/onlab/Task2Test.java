@@ -51,12 +51,8 @@ public class Task2Test {
 
 		kSession = kContainer.newKieSession("ksession-rules", config);
 		clock = kSession.getSessionClock();
-		// calendar =
-		// Calendar.getInstance().setTimeInMillis(clock.getCurrentTime());
 
 		kSession.setGlobal("mostProfitableAreas", toplist);
-		// calendar = Calendar.getInstance();
-		// calendar.setTimeInMillis(0);
 
 	}
 

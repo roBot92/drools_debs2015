@@ -4,13 +4,9 @@ package onlab.positioning;
 import static org.junit.Assert.*;
 
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
  
@@ -27,15 +23,10 @@ public class CellHelperTest {
 
 	}
 
-	@After
-	public void tearDown() throws Exception {
-		
-		
-	}
-
+	
 	@Test
-	public void testWithEdgeValues() {
-		//Cell cell1 = cellHelper.getCell(new Coordinate(BigDecimal.valueOf(-5), BigDecimal.valueOf(5)));
+	public void testGetCellWithEdgeValues() {
+		
 		Cell cell1 = cellHelper.getCell(new Coordinate(BigDecimal.valueOf(-10.4999), BigDecimal.valueOf(10.4999)));
 		Cell cell2 = cellHelper.getCell(new Coordinate(BigDecimal.valueOf(-10.5), BigDecimal.valueOf(10.4999)));
 		Cell cell3 = cellHelper.getCell(new Coordinate(BigDecimal.valueOf(-10.4999), BigDecimal.valueOf(10.5)));
@@ -54,7 +45,7 @@ public class CellHelperTest {
 		
 	
 		
-		//Assert.assertArrayEquals(Arrays.asList(new Cell()), actuals);
+		
 		
 		List<Cell> cells = Arrays.asList(cell1, cell2, cell3, cell4, cell5, cell6, cell7, cell8, cell9, cell10, cell11, cell12);
 		
@@ -67,7 +58,7 @@ public class CellHelperTest {
 			
 			assertTrue("Cell"+i, (i%3 == 0)? cells.get(i).equals(expectedCells.get(i)) : cells.get(i) == expectedCells.get(i));
 		}
-		//List<Cell> expectedCells = Arrays.asList(new Cell(5,5), new Cell())
+		
 
 	}
 
