@@ -1,4 +1,4 @@
-
+/*
 //created on: 2017.03.29.
 package onlab.event
 
@@ -43,8 +43,8 @@ declare RefreshRoute
 end
 
 declare Route
-@role(fact)
-//@timestamp(lastDropoffTime)
+@role(event)
+@timestamp(lastDropoffTime)
 end
 
 declare ReOrderRoutes
@@ -127,30 +127,37 @@ end
 rule task1_deactivateRoute
 salience 20
 	when
-		Tick($ctime : currentTime)
-		$route:Route(lastDropoffTime.getTime() + 30 * 60 * 1000 < $ctime || frequency == 0)
+		$tick: Tick($ctime : currentTime)
+		$route:Route(this before[30m , 999m] $tick)
 	then
 		retract($route);
-		insert(new ReOrderRoutes());
+		if(mostFrequentRoutes.contains($route)){
+			insert(new ReOrderRoutes());
+		}
 		
 end
 
 rule task1_removeTaxiLogsFromRoute
 salience 4
 	when
-		Tick($ctime : currentTime)
-		$tlogs: ArrayList() from collect( TaxiLog( dropoff_datetime.getTime() + 30 * 60 *1000 < $ctime))
+		$tick: Tick($ctime : currentTime)
+		$tlogs: ArrayList() from collect( TaxiLog( this before[30m , 999m] $tick) )//
 	then
+	
+		boolean needToReorder = false;
 		for(Object o : $tlogs){
 			TaxiLog $tlog = (TaxiLog)o;
 			Cell $pickupCell = $tlog.getPickup_cell();
 			Cell $dropoffCell = $tlog.getDropoff_cell();
 			retract($tlog);
+			if(!needToReorder && mostFrequentRoutes.contains($pickupCell, $dropoffCell)){
+				needToReorder = true;
+			}
 			insertLogical(new RefreshRoute($pickupCell, $dropoffCell, -1, -1));
 		}
 		
 		
-		if($tlogs != null && !$tlogs.isEmpty()){
+		if(needToReorder){
 			insert(new ReOrderRoutes());
 		}
 		
@@ -170,4 +177,4 @@ end
 
 query "refresh"
 	refresh: RefreshRoute()
-end
+end*/

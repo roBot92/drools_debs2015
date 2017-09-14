@@ -5,6 +5,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import onlab.event.Route;
+import onlab.positioning.Cell;
 
 @SuppressWarnings("serial")
 public class FrequentRoutesToplistSet<T extends Route> extends TreeSet<Route> implements SortedSet<Route> {
@@ -86,6 +87,16 @@ public class FrequentRoutesToplistSet<T extends Route> extends TreeSet<Route> im
 				return true;
 			}
 		}
+		return false;
+	}
+	
+	public boolean contains(Cell startingCell, Cell dropoffCell) {
+		for(Route route : this) {
+			if(route.getPickup_cell() == startingCell && route.getDropoff_cell() == dropoffCell) {
+				return true;
+			}
+		}
+		
 		return false;
 	}
 

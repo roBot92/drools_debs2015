@@ -11,6 +11,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import onlab.event.TaxiLog;
@@ -48,12 +49,7 @@ public class DataFileParser {
 		String nextLine = nextMinFirstLine;
 		if (scanner == null || !scanner.hasNextLine()) {
 			closeScanner();
-			if (nextLine == null) {
-				return null;
-			} else {
-				LOGGER.info("LastPArsedLine:"+parsed);
-				return Arrays.asList(parseNextLine(nextLine.split(delimiter)));
-			}
+			return null;
 		}
 
 		if(nextLine == null){
@@ -253,6 +249,10 @@ public class DataFileParser {
 			nextMinFirstLine = null;
 			parsed = 0;
 		}
+	}
+	
+	public void setLoggerLevel(Level level) {
+		LOGGER.setLevel(level);
 	}
 
 }

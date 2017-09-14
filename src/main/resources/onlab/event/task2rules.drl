@@ -1,4 +1,4 @@
-/*
+
 //created on: 2017.03.29.
 package onlab.event
 
@@ -226,4 +226,4 @@ end
 query "taxis"()
 	taxis: TaxiLog()
 end
-*/
+

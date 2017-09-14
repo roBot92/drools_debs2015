@@ -56,7 +56,6 @@ public class DebsMain {
 		KieServices ks = KieServices.Factory.get();
 		KieContainer kContainer = ks.getKieClasspathContainer();
 		KieSessionConfiguration config = ks.newKieSessionConfiguration();
-
 		config.setOption(ClockTypeOption.get("pseudo"));
 		KieSession kSession = kContainer.newKieSession("ksession-rules", config);
 
