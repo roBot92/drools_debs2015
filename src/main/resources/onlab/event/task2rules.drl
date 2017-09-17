@@ -51,7 +51,8 @@ declare ReOrderAreas
 end
 
 declare AreaWithProfit
-@role(fact)
+@role(event)
+@timestamp(lastInserted)
 end
 
 rule task1_removeInvalidTaxiLog
@@ -138,12 +139,10 @@ end
 rule "task2_deactivateAreaRule"
 salience 20
 	when
-	//	$ref:RefreshArea($ctime: currentTime, $cell:cell, insertedForDelay == -1 )
-		Tick($ctime:currentTime)
-		$area:AreaWithProfit(lastInserted.getTime() + 15 * 60 * 1000 < $ctime)
+		$tick: Tick()
+		$area:AreaWithProfit(this before[30m, 999m] $tick)
 	then
 		retract($area);
-	//	retract($ref);
 end		
 
 
@@ -152,7 +151,7 @@ rule "task2_remove_TaxiLog_from_pickupCell"
 salience 9
     when
         $tick:Tick($currentTime : currentTime )
-        $taxilogs: ArrayList() from collect (TaxiLog(dropoff_datetime.getTime() + 15 * 60 * 1000 < $currentTime, !olderThanAQuarter))
+        $taxilogs: ArrayList() from collect (TaxiLog(this before[15m, 999m] $tick && !olderThanAQuarter))
     then
     	for(Object o : $taxilogs){
     		TaxiLog $tlog = (TaxiLog)o;
@@ -173,7 +172,7 @@ rule "task2_remove_TaxiLog_from_WM"
 salience 4
     when
         $tick:Tick($currentTime : currentTime )
-        $taxilogs: ArrayList() from collect (TaxiLog(dropoff_datetime.getTime() + 30 * 60 * 1000 < $currentTime))
+        $taxilogs: ArrayList() from collect (TaxiLog(this before[30m, 999m] $tick))
     then
     	for(Object o : $taxilogs){
     		TaxiLog $tlog = (TaxiLog)o;
