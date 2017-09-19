@@ -19,7 +19,7 @@ import onlab.positioning.Cell;
 import onlab.positioning.CellHelper;
 import onlab.positioning.Coordinate;
 
-public class DataFileParser {
+public class DataFileParser implements AutoCloseable{
 
 	private static final Logger LOGGER = Logger.getLogger(DataFileParser.class.getName());
 
@@ -253,6 +253,14 @@ public class DataFileParser {
 	
 	public void setLoggerLevel(Level level) {
 		LOGGER.setLevel(level);
+	}
+
+	@Override
+	public void close() throws Exception {
+		if(scanner != null) {
+			scanner.close();
+		}
+		
 	}
 
 }

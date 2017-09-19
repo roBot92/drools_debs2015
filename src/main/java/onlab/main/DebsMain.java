@@ -27,13 +27,13 @@ import onlab.utility.ProfitableAreaToplistSet;
 
 public class DebsMain {
 
-	private static String DATA_FILE_URL = "C:\\Users\\Boti\\git\\onlab_tavasz\\src\\main\\resources\\onlab\\sorted_data.csv";
-	private static String DELIMITER = ",";
-	private static int columncount = 17;
-	private static BigDecimal FIRST_CELL_X = BigDecimal.valueOf(-74.913585);
-	private static BigDecimal FIRST_CELL_Y = BigDecimal.valueOf(41.474937);
-	private static BigDecimal SHIFT_Y = BigDecimal.valueOf(0.004491556);
-	private static BigDecimal SHIFT_X = BigDecimal.valueOf(0.005986);
+	public static String DATA_FILE_URL = "C:\\Users\\Boti\\git\\onlab_tavasz\\src\\main\\resources\\onlab\\sorted_data.csv";
+	public static String DELIMITER = ",";
+	public static int columncount = 17;
+	public static BigDecimal FIRST_CELL_X = BigDecimal.valueOf(-74.913585);
+	public static BigDecimal FIRST_CELL_Y = BigDecimal.valueOf(41.474937);
+	public static BigDecimal SHIFT_Y = BigDecimal.valueOf(0.004491556);
+	public static BigDecimal SHIFT_X = BigDecimal.valueOf(0.005986);
 
 	public static void main(String[] args) throws FileNotFoundException, ParseException {
 		List<TaxiLog> taxiLogs = null;
