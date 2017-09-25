@@ -1,5 +1,6 @@
 package onlab.utility;
 
+import java.util.Date;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -16,14 +17,13 @@ public class FrequentRoutesToplistSet<T extends Route> extends TreeSet<Route> im
 	public boolean add(Route route) {
 
 		Iterator<Route> descIterator = this.descendingIterator();
-		if(route.getDelay() == -1){
+		if (route.getDelay() == -1) {
 			route.setDelay(System.currentTimeMillis() - route.getInsertedForDelay());
 		}
 		if (this.size() >= MAX_ELEMENT_NUMBER && descIterator.next().compareTo(route) == -1) {
 			return false;
 		}
-		
-		
+
 		Iterator<Route> i = this.iterator();
 
 		while (i.hasNext()) {
@@ -45,14 +45,14 @@ public class FrequentRoutesToplistSet<T extends Route> extends TreeSet<Route> im
 		return result;
 	}
 
-	
-
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		int counter = 1;
-		for (Route route : this) {
-			builder.append((counter++) + route.toString() + "\n");
+
+		Iterator<Route> iterator = iterator();
+		while (iterator.hasNext() && counter < 11) {
+			builder.append((counter++) + iterator.next().toString() + "\n");
 		}
 
 		while (counter < MAX_ELEMENT_NUMBER + 1) {
@@ -80,24 +80,53 @@ public class FrequentRoutesToplistSet<T extends Route> extends TreeSet<Route> im
 		if (o == null || !(o instanceof Route)) {
 			return false;
 		}
-		
-		Route route = (Route)o;
+
+		Route route = (Route) o;
 		for (Route iRoute : this) {
-			if (iRoute.getPickup_cell() == route.getPickup_cell() && iRoute.getDropoff_cell() == route.getDropoff_cell()) {
+			if (iRoute.getPickup_cell() == route.getPickup_cell()
+					&& iRoute.getDropoff_cell() == route.getDropoff_cell()) {
 				return true;
 			}
 		}
 		return false;
 	}
-	
+
 	public boolean contains(Cell startingCell, Cell dropoffCell) {
-		for(Route route : this) {
-			if(route.getPickup_cell() == startingCell && route.getDropoff_cell() == dropoffCell) {
+		for (Route route : this) {
+			if (route.getPickup_cell() == startingCell && route.getDropoff_cell() == dropoffCell) {
 				return true;
 			}
 		}
-		
+
 		return false;
+	}
+
+	public Route remove(Cell pickupCell, Cell dropoffCell) {
+
+		Iterator<Route> iterator = iterator();
+
+		while (iterator.hasNext()) {
+			Route route = iterator.next();
+			if (route.getPickup_cell() == pickupCell && route.getDropoff_cell() == dropoffCell) {
+				iterator.remove();
+				return route;
+			}
+		}
+		return null;
+	}
+
+	public void refreshRoute(Cell pickupCell, Cell dropoffCell, Date lastDropoffTime, int frequency) {
+		Route route = remove(pickupCell, dropoffCell);
+		if (frequency != 0) {
+			if (route == null) {
+				super.add(new Route(pickupCell, dropoffCell, lastDropoffTime, frequency));
+			} else {
+				route.setFrequency(frequency);
+				route.setLastDropoffTime(lastDropoffTime);
+				super.add(route);
+			}
+
+		}
 	}
 
 }
