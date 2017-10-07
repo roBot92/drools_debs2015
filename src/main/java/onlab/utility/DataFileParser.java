@@ -31,6 +31,7 @@ public class DataFileParser implements AutoCloseable{
 	private CellHelper cellHelper;
 	private Scanner scanner;
 	private String nextMinFirstLine;
+	private String fileName;
 	
 	//debug
 	private long parsed = 0;
@@ -40,8 +41,10 @@ public class DataFileParser implements AutoCloseable{
 		this.delimiter = delimiter;
 		this.columncount = columncount;
 		this.cellHelper = cellHelper;
+		this.fileName = fileName;
 		this.scanner = new Scanner(new File(fileName));
 		this.scanner.useDelimiter(delimiter);
+		LOGGER.setLevel(Level.SEVERE);
 	}
 
 	public List<TaxiLog> parseNextLinesFromCSVGroupedByDropoffDate() {
@@ -262,5 +265,16 @@ public class DataFileParser implements AutoCloseable{
 		}
 		
 	}
+
+	@Override
+	public Object clone() throws CloneNotSupportedException {
+		try {
+			return new DataFileParser(fileName, delimiter, columncount, cellHelper);
+		} catch (FileNotFoundException e) {
+			LOGGER.log(Level.SEVERE, fileName + " not found.", e);
+			return null;
+		}
+	}
+	
 
 }
