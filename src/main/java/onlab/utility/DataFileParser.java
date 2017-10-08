@@ -259,7 +259,7 @@ public class DataFileParser implements AutoCloseable{
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() {
 		if(scanner != null) {
 			scanner.close();
 		}

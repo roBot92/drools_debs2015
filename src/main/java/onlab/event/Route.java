@@ -137,6 +137,17 @@ public class Route implements Comparable<Route> {
 		return "Route - Pickup cell:" + pickup_cell + " Dropoff cell:" + dropoff_cell + " - Frequency:" + frequency
 				+ " - Last Dropoff Time: " + df.format(lastDropoffTime) + " Delay: " + delay +" ms";
 	}
+	
+	public void increaseFrequency() {
+		frequency++;
+	}
+	
+	/**
+	 * @return false, if frequency is decreased to zero or fewer
+	 */
+	public boolean decreaseFrequency() {
+		return --frequency > 0;
+	}
 
 	
 }

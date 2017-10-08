@@ -91,16 +91,6 @@ public class FrequentRoutesToplistSet<T extends Route> extends TreeSet<Route> im
 		return false;
 	}
 
-	public boolean contains(Cell startingCell, Cell dropoffCell) {
-		for (Route route : this) {
-			if (route.getPickup_cell() == startingCell && route.getDropoff_cell() == dropoffCell) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
 	public Route remove(Cell pickupCell, Cell dropoffCell) {
 
 		Iterator<Route> iterator = iterator();
@@ -115,6 +105,7 @@ public class FrequentRoutesToplistSet<T extends Route> extends TreeSet<Route> im
 		return null;
 	}
 
+	// for Esper implementation
 	public void refreshRoute(Cell pickupCell, Cell dropoffCell, Date lastDropoffTime, int frequency) {
 		Route route = remove(pickupCell, dropoffCell);
 		if (frequency != 0) {
@@ -129,4 +120,32 @@ public class FrequentRoutesToplistSet<T extends Route> extends TreeSet<Route> im
 		}
 	}
 
+	// for BeepBeep implementation
+	public void increaseRouteFrequency(Cell pickupCell, Cell dropoffCell, Date lastDropoffTime) {
+		Route route = remove(pickupCell, dropoffCell);
+		if (route == null) {
+			route = new Route(pickupCell, dropoffCell, lastDropoffTime, 1);
+		} else {
+			route.increaseFrequency();
+			route.setLastDropoffTime(lastDropoffTime);
+		}
+
+		add(route);
+	}
+	
+	public void decreaseRouteFrequency(Cell pickupCell, Cell dropoffCell) {
+		Route route = remove(pickupCell, dropoffCell);
+		if(route != null) {
+			boolean isNotEmpty = route.decreaseFrequency();
+			if(isNotEmpty) {
+				add(route);
+			}
+		}
+	}
+
+	/*
+	 * private Route getByCells(Cell pickupCell, Cell dropoffCell) { for(Route route
+	 * : this) { if(route.getPickup_cell() == pickupCell && route.getDropoff_cell()
+	 * == dropoffCell) { return route; } } return null; }
+	 */
 }
