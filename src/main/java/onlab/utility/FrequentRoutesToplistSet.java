@@ -130,7 +130,7 @@ public class FrequentRoutesToplistSet<T extends Route> extends TreeSet<Route> im
 			route.setLastDropoffTime(lastDropoffTime);
 		}
 
-		add(route);
+		super.add(route);
 	}
 	
 	public void decreaseRouteFrequency(Cell pickupCell, Cell dropoffCell) {
@@ -138,7 +138,7 @@ public class FrequentRoutesToplistSet<T extends Route> extends TreeSet<Route> im
 		if(route != null) {
 			boolean isNotEmpty = route.decreaseFrequency();
 			if(isNotEmpty) {
-				add(route);
+				super.add(route);
 			}
 		}
 	}
