@@ -91,24 +91,10 @@ public class Route implements Comparable<Route> {
 		if (getClass() != obj.getClass())
 			return false;
 		Route other = (Route) obj;
-		if (dropoff_cell == null) {
-			if (other.dropoff_cell != null)
-				return false;
-		} else if (!dropoff_cell.equals(other.dropoff_cell))
-			return false;
-		if (frequency != other.frequency)
-			return false;
-		if (lastDropoffTime == null) {
-			if (other.lastDropoffTime != null)
-				return false;
-		} else if (!lastDropoffTime.equals(other.lastDropoffTime))
-			return false;
-		if (pickup_cell == null) {
-			if (other.pickup_cell != null)
-				return false;
-		} else if (!pickup_cell.equals(other.pickup_cell))
-			return false;
-		return true;
+		if(pickup_cell == other.pickup_cell && dropoff_cell == other.dropoff_cell) {
+			return true;
+		}
+		return false;
 	}
 
 	@Override

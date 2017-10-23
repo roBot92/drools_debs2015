@@ -66,22 +66,10 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 		if (getClass() != obj.getClass())
 			return false;
 		AreaWithProfit other = (AreaWithProfit) obj;
-		if (cell == null) {
-			if (other.cell != null)
-				return false;
-		} else if (!cell.equals(other.cell))
-			return false;
-		if (lastInserted == null) {
-			if (other.lastInserted != null)
-				return false;
-		} else if (!lastInserted.equals(other.lastInserted))
-			return false;
-		if (medianProfitIndex == null) {
-			if (other.medianProfitIndex != null)
-				return false;
-		} else if (medianProfitIndex.compareTo(other.medianProfitIndex) != 0)
-			return false;
-		return true;
+		if(cell == other.cell) {
+			return true;
+		}
+		return false;
 	}
 
 	@Override
