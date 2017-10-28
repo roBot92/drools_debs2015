@@ -33,6 +33,12 @@ public class DataFileParser implements AutoCloseable{
 	private String nextMinFirstLine;
 	private String fileName;
 	
+	private static long CURRENT_TIME=0;
+	
+	public static long getCURRENT_TIME() {
+		return CURRENT_TIME;
+	}
+
 	//debug
 	private long parsed = 0;
 
@@ -72,6 +78,10 @@ public class DataFileParser implements AutoCloseable{
 		}
 
 		LOGGER.info("LastPArsedLine:"+parsed);
+		
+		if(!resultList.isEmpty()) {
+			CURRENT_TIME = resultList.get(0).getDropoff_datetime().getTime();
+		}
 		return resultList;
 
 	}

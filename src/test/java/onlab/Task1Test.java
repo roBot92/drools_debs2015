@@ -28,7 +28,7 @@ import onlab.utility.FrequentRoutesToplistSet;
 
 public class Task1Test {
 
-	private FrequentRoutesToplistSet<Route> toplist;
+	private FrequentRoutesToplistSet toplist;
 	private KieSession kSession;
 	private SessionPseudoClock clock;
 	private static List<Cell> cells;
@@ -76,7 +76,7 @@ public class Task1Test {
 
 	@Before
 	public void setUp() throws Exception {
-		toplist = new FrequentRoutesToplistSet<Route>();
+		toplist = new FrequentRoutesToplistSet();
 		KieServices ks = KieServices.Factory.get();
 		KieContainer kContainer = ks.getKieClasspathContainer();
 		KieSessionConfiguration config = ks.newKieSessionConfiguration();

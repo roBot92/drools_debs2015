@@ -28,7 +28,7 @@ import onlab.utility.ProfitableAreaToplistSet;
 
 public class Task2Test {
 
-	private ProfitableAreaToplistSet<AreaWithProfit> toplist;
+	private ProfitableAreaToplistSet toplist;
 	private KieSession kSession;
 	private SessionPseudoClock clock;
 	private static List<Cell> cells;
@@ -42,7 +42,7 @@ public class Task2Test {
 
 	@Before
 	public void setUp() throws Exception {
-		toplist = new ProfitableAreaToplistSet<AreaWithProfit>();
+		toplist = new ProfitableAreaToplistSet();
 		KieServices ks = KieServices.Factory.get();
 		KieContainer kContainer = ks.getKieClasspathContainer();
 		KieSessionConfiguration config = ks.newKieSessionConfiguration();

@@ -1,68 +1,58 @@
 package onlab.utility;
 
-
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.SortedSet;
+import java.util.Map;
 import java.util.TreeSet;
 
 import onlab.event.AreaWithProfit;
+import onlab.positioning.Cell;
 
-@SuppressWarnings("serial")
-public class ProfitableAreaToplistSet<T> extends TreeSet<AreaWithProfit> implements SortedSet<AreaWithProfit> {
+public class ProfitableAreaToplistSet /* extends TreeSet<AreaWithProfit> implements SortedSet<AreaWithProfit> */ {
 
 	private static int MAX_ELEMENT_NUMBER = 11;
 
+	TreeSet<AreaWithProfit> toplist = new TreeSet<AreaWithProfit>();
+	Map<Cell, AreaWithProfit> areaMap = new HashMap<Cell, AreaWithProfit>();
 
+	public boolean add(AreaWithProfit newArea) {
 
-	@Override
-	public boolean add(AreaWithProfit area) {
+		AreaWithProfit containedArea = areaMap.get(newArea.getCell());
 
-		Iterator<AreaWithProfit> descIterator = this.descendingIterator();
-		if (this.size() >= MAX_ELEMENT_NUMBER && descIterator.next().compareTo(area) == -1) {
-			if (area.getDelay() == -1) {
-				area.setDelay(System.currentTimeMillis() - area.getInsertedForDelay());
-			}
-		}
-		Iterator<AreaWithProfit> i = this.iterator();
-
-		while (i.hasNext()) {
-			AreaWithProfit iArea = i.next();
-			if (iArea.getCell() == area.getCell()) {
-				i.remove();
-				break;
-			}
+		if (containedArea != null) {
+			toplist.remove(containedArea);
 		}
 
-		boolean result = super.add(area);
+		toplist.add(newArea);
+		areaMap.put(newArea.getCell(), newArea);
 
-		if (this.size() > MAX_ELEMENT_NUMBER) {
-			i = this.descendingIterator();
-			i.next();
-			i.remove();
-		}
-
-		if (area.getDelay() == -1) {
-			area.setDelay(System.currentTimeMillis() - area.getInsertedForDelay());
-		}
-		return result;
+		return toplist.add(newArea);/*
+									 * Iterator<AreaWithProfit> descIterator = this.descendingIterator(); if
+									 * (this.size() >= MAX_ELEMENT_NUMBER && descIterator.next().compareTo(area) ==
+									 * -1) { if (area.getDelay() == -1) { area.setDelay(System.currentTimeMillis() -
+									 * area.getInsertedForDelay()); } } Iterator<AreaWithProfit> i =
+									 * this.iterator();
+									 * 
+									 * while (i.hasNext()) { AreaWithProfit iArea = i.next(); if (iArea.getCell() ==
+									 * area.getCell()) { i.remove(); break; } }
+									 * 
+									 * boolean result = super.add(area);
+									 * 
+									 * if (this.size() > MAX_ELEMENT_NUMBER) { i = this.descendingIterator();
+									 * i.next(); i.remove(); }
+									 * 
+									 * if (area.getDelay() == -1) { area.setDelay(System.currentTimeMillis() -
+									 * area.getInsertedForDelay()); } return result;
+									 */
 	}
-
-	/*
-	 * public void refresh(long currentTimeInMillis){ List<AreaWithProfit>
-	 * removables = new ArrayList<AreaWithProfit>(); for(AreaWithProfit i :
-	 * this){ if(i.getLastInserted() + 15*60*1000 < currentTimeInMillis){
-	 * removables.add(i); } }
-	 * 
-	 * this.removeAll(removables);
-	 * 
-	 * }
-	 */
 
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		int counter = 1;
-		for (AreaWithProfit area : this) {
+		for (AreaWithProfit area : toplist) {
 			builder.append((counter++) + area.toString() + "\n");
 		}
 
@@ -76,10 +66,10 @@ public class ProfitableAreaToplistSet<T> extends TreeSet<AreaWithProfit> impleme
 	}
 
 	public AreaWithProfit get(int index) {
-		if (index >= this.size()) {
+		if (index >= toplist.size()) {
 			return null;
 		}
-		Iterator<AreaWithProfit> iterator = this.iterator();
+		Iterator<AreaWithProfit> iterator = toplist.iterator();
 		for (int i = 0; i < index; i++) {
 			iterator.next();
 		}
@@ -89,27 +79,67 @@ public class ProfitableAreaToplistSet<T> extends TreeSet<AreaWithProfit> impleme
 
 	public long getAverageDelay() {
 		long sumDelay = 0;
-		for (AreaWithProfit area : this) {
+		for (AreaWithProfit area : toplist) {
 			sumDelay += area.getDelay();
 		}
 
-		return this.size() == 0 ? 0 : sumDelay / this.size();
+		return toplist.size() == 0 ? 0 : sumDelay / toplist.size();
 	}
 
-	@Override
-	public boolean contains(Object o) {
-		if (o == null || !(o instanceof AreaWithProfit)) {
-			return false;
+	public long size() {
+		return toplist.size();
+	}
+
+	public void remove(AreaWithProfit removableArea) {
+		toplist.remove(removableArea);
+	}
+
+	public boolean isEmpty() {
+		return toplist.isEmpty();
+	}
+
+	public AreaWithProfit removeByCell(Cell cell) {
+		AreaWithProfit area = areaMap.get(cell);
+
+		if (area != null) {
+			toplist.remove(area);
+		}
+		return area;
+
+	}
+
+	//Esper
+	public void refreshAreaTaxiCount(Cell cell, Date lastInserted, long count) {
+		AreaWithProfit area = removeByCell(cell);
+		
+		if(area == null) {
+			area = new AreaWithProfit(cell, lastInserted);
+			areaMap.put(cell, area);
+		} else {
+			area.setLastInserted(lastInserted);
+		}
+		
+		area.setCountOfTaxes(count);
+		if(BigDecimal.ZERO.compareTo(area.getMedianProfitIndex()) == -1) {
+			toplist.add(area);
 		}
 
-		AreaWithProfit area = (AreaWithProfit) o;
-		for (AreaWithProfit iArea : this) {
-			if (iArea.getCell() == area.getCell()) {
-				return true;
-			}
-
+	}
+	
+	public void refreshAreaMedian(Cell cell,  Date lastInserted, BigDecimal median) {
+		AreaWithProfit area = removeByCell(cell);
+		
+		if(area == null) {
+			area = new AreaWithProfit(cell, lastInserted);
+			areaMap.put(cell, area);
+		} else {
+			area.setLastInserted(lastInserted);
+		}
+		
+		area.setMedianProfit(median);
+		if(BigDecimal.ZERO.compareTo(area.getMedianProfitIndex()) == -1) {
+			toplist.add(area);
 		}
 
-		return false;
 	}
 }

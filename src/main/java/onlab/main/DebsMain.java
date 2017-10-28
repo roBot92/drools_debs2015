@@ -60,9 +60,9 @@ public class DebsMain {
 		KieSession kSession = kContainer.newKieSession("ksession-rules", config);
 
 		// Task1
-		SortedSet<Route> mostFrequentRoutes = new FrequentRoutesToplistSet<Route>();
+		FrequentRoutesToplistSet mostFrequentRoutes = new FrequentRoutesToplistSet();
 		// Task2
-		ProfitableAreaToplistSet<AreaWithProfit> mostProfitableAreas = new ProfitableAreaToplistSet<AreaWithProfit>();
+		ProfitableAreaToplistSet mostProfitableAreas = new ProfitableAreaToplistSet();
 
 		// Adding global toplists to the session
 		kSession.setGlobal("mostFrequentRoutes", mostFrequentRoutes);

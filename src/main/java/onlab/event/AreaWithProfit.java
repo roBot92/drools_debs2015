@@ -12,12 +12,16 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 	private long delay;
 	private long insertedForDelay;
 
-	public AreaWithProfit(Cell cell, BigDecimal medianProfit, Date lastInserted) {
+	// Drools-hoz nem kell jelenleg
+	private BigDecimal medianProfit;
+	private long countOfTaxes = 0;
+
+	public AreaWithProfit(Cell cell, BigDecimal medianProfitIndex, Date lastInserted) {
 		this.cell = cell;
-		this.medianProfitIndex = medianProfit;
+		this.medianProfitIndex = medianProfitIndex;
 		this.lastInserted = lastInserted;
 	}
-	
+
 	public AreaWithProfit(Cell cell, Date lastInserted) {
 		this.cell = cell;
 		this.lastInserted = lastInserted;
@@ -66,7 +70,7 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 		if (getClass() != obj.getClass())
 			return false;
 		AreaWithProfit other = (AreaWithProfit) obj;
-		if(cell == other.cell) {
+		if (cell == other.cell) {
 			return true;
 		}
 		return false;
@@ -80,35 +84,34 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 
 		BigDecimal otherMedian = area.getMedianProfitIndex();
 		Date otherTime = area.getLastInserted();
-		
-		if(otherMedian == null){
+
+		if (otherMedian == null) {
 			return -1;
-		}
-		else if( medianProfitIndex == null){
+		} else if (medianProfitIndex == null) {
 			return 1;
 		}
-		if(medianProfitIndex.compareTo(otherMedian) != 0){
+		if (medianProfitIndex.compareTo(otherMedian) != 0) {
 			return medianProfitIndex.compareTo(otherMedian) * -1;
 		}
-		
-		if(otherTime == null){
+
+		if (otherTime == null) {
 			return -1;
-		}
-		else if( lastInserted == null){
+		} else if (lastInserted == null) {
 			return 1;
 		}
-		
-		if(lastInserted.compareTo(otherTime) != 0){
+
+		if (lastInserted.compareTo(otherTime) != 0) {
 			return lastInserted.compareTo(otherTime) * -1;
 		}
-		
+
 		return -1;
-			
+
 	}
 
 	@Override
 	public String toString() {
-		return "Cell: " + this.cell + " - Median profit: " + this.medianProfitIndex + " - Dropoff time: " + lastInserted + "Delay: " + delay + " ms";
+		return "Cell: " + this.cell + " - Median profit: " + this.medianProfitIndex + " - Dropoff time: " + lastInserted
+				+ "Delay: " + delay + " ms";
 	}
 
 	public long getDelay() {
@@ -126,7 +129,28 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 	public void setInsertedForDelay(long insertedForDelay) {
 		this.insertedForDelay = insertedForDelay;
 	}
-	
-	
+
+	public BigDecimal getMedianProfit() {
+		return medianProfit;
+	}
+
+	public void setMedianProfit(BigDecimal medianProfit) {
+		this.medianProfit = medianProfit;
+
+		medianProfitIndex = (countOfTaxes == 0) ? medianProfit : medianProfit.divide(BigDecimal.valueOf(countOfTaxes));
+	}
+
+	public long getCountOfTaxes() {
+		return countOfTaxes;
+	}
+
+	public void setCountOfTaxes(long countOfTaxes) {
+		this.countOfTaxes = countOfTaxes;
+		if (medianProfit != null) {
+			medianProfitIndex = medianProfit.divide(BigDecimal.valueOf(countOfTaxes == 0 ? 1 : countOfTaxes));
+		} else {
+			medianProfit = BigDecimal.ZERO;
+		}
+	}
 
 }
