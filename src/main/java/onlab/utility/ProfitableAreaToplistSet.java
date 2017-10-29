@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.TreeSet;
 
 import onlab.event.AreaWithProfit;
+import onlab.event.Route;
 import onlab.positioning.Cell;
 
 public class ProfitableAreaToplistSet /* extends TreeSet<AreaWithProfit> implements SortedSet<AreaWithProfit> */ {
@@ -52,15 +53,16 @@ public class ProfitableAreaToplistSet /* extends TreeSet<AreaWithProfit> impleme
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		int counter = 1;
-		for (AreaWithProfit area : toplist) {
-			builder.append((counter++) + area.toString() + "\n");
+
+		Iterator<AreaWithProfit> iterator = toplist.iterator();
+		while (iterator.hasNext() && counter < 11) {
+			builder.append((counter++) + iterator.next().toString() + "\n");
 		}
 
-		while (counter <= MAX_ELEMENT_NUMBER) {
+		while (counter < MAX_ELEMENT_NUMBER + 1) {
 			builder.append((counter++) + "NULL" + "\n");
 		}
 
-		builder.append("Average delay: " + getAverageDelay() + " ms");
 		return builder.toString();
 
 	}
@@ -108,36 +110,38 @@ public class ProfitableAreaToplistSet /* extends TreeSet<AreaWithProfit> impleme
 
 	}
 
-	//Esper
+	// Esper
 	public void refreshAreaTaxiCount(Cell cell, Date lastInserted, long count) {
 		AreaWithProfit area = removeByCell(cell);
-		
-		if(area == null) {
+
+		if (area == null) {
 			area = new AreaWithProfit(cell, lastInserted);
 			areaMap.put(cell, area);
 		} else {
 			area.setLastInserted(lastInserted);
 		}
-		
+
 		area.setCountOfTaxes(count);
-		if(BigDecimal.ZERO.compareTo(area.getMedianProfitIndex()) == -1) {
-			toplist.add(area);
+		if (area.getMedianProfitIndex() != null) {
+			if (BigDecimal.ZERO.compareTo(area.getMedianProfitIndex()) == -1 && lastInserted != null) {
+				toplist.add(area);
+			}
 		}
 
 	}
-	
-	public void refreshAreaMedian(Cell cell,  Date lastInserted, BigDecimal median) {
+
+	public void refreshAreaMedian(Cell cell, Date lastInserted, Double median) {
 		AreaWithProfit area = removeByCell(cell);
-		
-		if(area == null) {
+
+		if (area == null) {
 			area = new AreaWithProfit(cell, lastInserted);
 			areaMap.put(cell, area);
 		} else {
 			area.setLastInserted(lastInserted);
 		}
-		
-		area.setMedianProfit(median);
-		if(BigDecimal.ZERO.compareTo(area.getMedianProfitIndex()) == -1) {
+
+		area.setMedianProfit(median != null ? BigDecimal.valueOf(median) : null);
+		if (BigDecimal.ZERO.compareTo(area.getMedianProfitIndex()) == -1 && lastInserted != null) {
 			toplist.add(area);
 		}
 

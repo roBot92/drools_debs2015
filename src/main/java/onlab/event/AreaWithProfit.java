@@ -1,6 +1,7 @@
 package onlab.event;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 import onlab.positioning.Cell;
 
@@ -137,7 +138,11 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 	public void setMedianProfit(BigDecimal medianProfit) {
 		this.medianProfit = medianProfit;
 
-		medianProfitIndex = (countOfTaxes == 0) ? medianProfit : medianProfit.divide(BigDecimal.valueOf(countOfTaxes));
+		if(medianProfit != null) {
+			medianProfitIndex = (countOfTaxes == 0) ? medianProfit
+					: medianProfit.divide(BigDecimal.valueOf(countOfTaxes), 2, RoundingMode.HALF_UP);
+		}
+		
 	}
 
 	public long getCountOfTaxes() {
@@ -147,7 +152,8 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 	public void setCountOfTaxes(long countOfTaxes) {
 		this.countOfTaxes = countOfTaxes;
 		if (medianProfit != null) {
-			medianProfitIndex = medianProfit.divide(BigDecimal.valueOf(countOfTaxes == 0 ? 1 : countOfTaxes));
+			medianProfitIndex = medianProfit.divide(BigDecimal.valueOf(countOfTaxes == 0 ? 1 : countOfTaxes), 2,
+					RoundingMode.HALF_UP);
 		} else {
 			medianProfit = BigDecimal.ZERO;
 		}
