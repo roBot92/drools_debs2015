@@ -5,7 +5,6 @@ import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.SortedSet;
 import java.util.concurrent.TimeUnit;
 
 import org.drools.core.time.SessionPseudoClock;
@@ -15,15 +14,12 @@ import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.KieSessionConfiguration;
 import org.kie.api.runtime.conf.ClockTypeOption;
 
-import onlab.event.AreaWithProfit;
-import onlab.event.Route;
 import onlab.event.TaxiLog;
 import onlab.event.Tick;
 import onlab.positioning.*;
 import onlab.utility.DataFileParser;
 import onlab.utility.FrequentRoutesToplistSet;
 import onlab.utility.ProfitableAreaToplistSet;
-
 
 public class DebsMain {
 
@@ -37,91 +33,90 @@ public class DebsMain {
 
 	public static void main(String[] args) throws FileNotFoundException, ParseException {
 		List<TaxiLog> taxiLogs = null;
-		CellHelper chelper = new CellHelper(FIRST_CELL_X, FIRST_CELL_Y,
-				SHIFT_X.divide(BigDecimal.valueOf(2)),
+		CellHelper chelper = new CellHelper(FIRST_CELL_X, FIRST_CELL_Y, SHIFT_X.divide(BigDecimal.valueOf(2)),
 				SHIFT_Y.divide(BigDecimal.valueOf(2)), 600);
 
 		/*
-		 * try { taxiLogs =
-		 * DataFileParser.parseCSVIntoTaxiLogList(DATA_FILE_URL, DELIMITER,
-		 * columncount, 7500, chelper);
+		 * try { taxiLogs = DataFileParser.parseCSVIntoTaxiLogList(DATA_FILE_URL,
+		 * DELIMITER, columncount, 7500, chelper);
 		 * 
 		 * } catch (FileNotFoundException e) {
 		 * 
 		 * e.printStackTrace(); throw e; }
 		 */
+		DataFileParser dataFileParser = null;
+		try {
 
-		DataFileParser dataFileParser = new DataFileParser(DATA_FILE_URL, DELIMITER, columncount, chelper);
+			dataFileParser = new DataFileParser(DATA_FILE_URL, DELIMITER, columncount, chelper);
 
-		KieServices ks = KieServices.Factory.get();
-		KieContainer kContainer = ks.getKieClasspathContainer();
-		KieSessionConfiguration config = ks.newKieSessionConfiguration();
-		config.setOption(ClockTypeOption.get("pseudo"));
-		KieSession kSession = kContainer.newKieSession("ksession-rules", config);
+			KieServices ks = KieServices.Factory.get();
+			KieContainer kContainer = ks.getKieClasspathContainer();
+			KieSessionConfiguration config = ks.newKieSessionConfiguration();
+			config.setOption(ClockTypeOption.get("pseudo"));
+			KieSession kSession = kContainer.newKieSession("ksession-rules", config);
 
-		// Task1
-		FrequentRoutesToplistSet mostFrequentRoutes = new FrequentRoutesToplistSet();
-		// Task2
-		ProfitableAreaToplistSet mostProfitableAreas = new ProfitableAreaToplistSet();
+			// Task1
+			FrequentRoutesToplistSet mostFrequentRoutes = new FrequentRoutesToplistSet();
+			// Task2
+			ProfitableAreaToplistSet mostProfitableAreas = new ProfitableAreaToplistSet();
 
-		// Adding global toplists to the session
-		kSession.setGlobal("mostFrequentRoutes", mostFrequentRoutes);
-		kSession.setGlobal("mostProfitableAreas", mostProfitableAreas);
-
-		taxiLogs = dataFileParser.parseNextLinesFromCSVGroupedByDropoffDate();
-
-		long previousTimeInMillis = taxiLogs.get(0).getDropoff_datetime().getTime();
-		
-
-		SessionPseudoClock clock = kSession.getSessionClock();
-		clock.advanceTime(previousTimeInMillis, TimeUnit.MILLISECONDS);
-
-		// For measuring
-		long linecounter = 0;
-		List<Long> averages = new ArrayList<Long>();
-		List<Long> timeDifferencesForAverages = new ArrayList<Long>();
-		timeDifferencesForAverages.add(previousTimeInMillis);
-		
-		
-		long realTime = System.currentTimeMillis();
-
-		while (dataFileParser.hasNextLine() && linecounter < 200000) {
+			// Adding global toplists to the session
+			kSession.setGlobal("mostFrequentRoutes", mostFrequentRoutes);
+			kSession.setGlobal("mostProfitableAreas", mostProfitableAreas);
 
 			taxiLogs = dataFileParser.parseNextLinesFromCSVGroupedByDropoffDate();
 
-			long currentTimeInMillis = taxiLogs.get(0).getDropoff_datetime().getTime();
-			
-			stepXSeconds(kSession, clock, (currentTimeInMillis - previousTimeInMillis) / 1000 +1);
+			long previousTimeInMillis = taxiLogs.get(0).getDropoff_datetime().getTime();
 
-			kSession.fireAllRules();
-			for (TaxiLog tlog : taxiLogs) {
-				tlog.setInserted(System.currentTimeMillis());
-				kSession.insert(tlog);
-				linecounter++;
+			SessionPseudoClock clock = kSession.getSessionClock();
+			clock.advanceTime(previousTimeInMillis, TimeUnit.MILLISECONDS);
+
+			// For measuring
+			long linecounter = 0;
+			List<Long> averages = new ArrayList<Long>();
+			List<Long> timeDifferencesForAverages = new ArrayList<Long>();
+			timeDifferencesForAverages.add(previousTimeInMillis);
+
+			long realTime = System.currentTimeMillis();
+
+			while (dataFileParser.hasNextLine() && linecounter < 200000) {
+
+				taxiLogs = dataFileParser.parseNextLinesFromCSVGroupedByDropoffDate();
+
+				long currentTimeInMillis = taxiLogs.get(0).getDropoff_datetime().getTime();
+
+				stepXSeconds(kSession, clock, (currentTimeInMillis - previousTimeInMillis) / 1000 + 1);
+
 				kSession.fireAllRules();
-				if (linecounter % 1000 == 0) {
-					averages.add(System.currentTimeMillis() - realTime);
-					timeDifferencesForAverages.add(tlog.getDropoff_datetime().getTime());
-					realTime = System.currentTimeMillis();
+				for (TaxiLog tlog : taxiLogs) {
+					tlog.setInserted(System.currentTimeMillis());
+					kSession.insert(tlog);
+					linecounter++;
+					kSession.fireAllRules();
+					if (linecounter % 1000 == 0) {
+						averages.add(System.currentTimeMillis() - realTime);
+						timeDifferencesForAverages.add(tlog.getDropoff_datetime().getTime());
+						realTime = System.currentTimeMillis();
+					}
 				}
+
+				kSession.fireAllRules();
+
+				previousTimeInMillis = currentTimeInMillis;
+				System.out.println(mostProfitableAreas);
+
+			}
+			for (int i = 0; i < averages.size(); i++) {
+				System.out.println((i * 1000) + ": " + averages.get(i) / 1000 + "sec to parse "
+						+ (timeDifferencesForAverages.get(i + 1) - timeDifferencesForAverages.get(i)) / 1000 + " sec");
 			}
 
-			kSession.fireAllRules();
-
-			previousTimeInMillis = currentTimeInMillis;
 			System.out.println(mostProfitableAreas);
-			
-			
-
+		} finally {
+			if(dataFileParser != null) {
+				dataFileParser.close();
+			}
 		}
-		for (int i = 0; i < averages.size(); i++) {
-			System.out.println((i * 1000) + ": " + averages.get(i) / 1000 + "sec to parse "
-					+ (timeDifferencesForAverages.get(i + 1) - timeDifferencesForAverages.get(i)) / 1000 + " sec");
-		}
-
-
-
-		System.out.println(mostProfitableAreas);
 
 	}
 

@@ -138,11 +138,11 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 	public void setMedianProfit(BigDecimal medianProfit) {
 		this.medianProfit = medianProfit;
 
-		if(medianProfit != null) {
+		if (medianProfit != null) {
 			medianProfitIndex = (countOfTaxes == 0) ? medianProfit
 					: medianProfit.divide(BigDecimal.valueOf(countOfTaxes), 2, RoundingMode.HALF_UP);
 		}
-		
+
 	}
 
 	public long getCountOfTaxes() {
@@ -157,6 +157,17 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 		} else {
 			medianProfit = BigDecimal.ZERO;
 		}
+	}
+
+	public void increaseCountOfTaxes() {
+		setCountOfTaxes(countOfTaxes + 1);
+	}
+
+	public void decreaseCountOfTaxes() {
+		if (countOfTaxes > 0) {
+			setCountOfTaxes(countOfTaxes + 1);
+		}
+
 	}
 
 }

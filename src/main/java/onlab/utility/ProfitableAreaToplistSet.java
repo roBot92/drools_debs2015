@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.TreeSet;
 
 import onlab.event.AreaWithProfit;
-import onlab.event.Route;
 import onlab.positioning.Cell;
 
 public class ProfitableAreaToplistSet /* extends TreeSet<AreaWithProfit> implements SortedSet<AreaWithProfit> */ {
@@ -29,24 +28,7 @@ public class ProfitableAreaToplistSet /* extends TreeSet<AreaWithProfit> impleme
 		toplist.add(newArea);
 		areaMap.put(newArea.getCell(), newArea);
 
-		return toplist.add(newArea);/*
-									 * Iterator<AreaWithProfit> descIterator = this.descendingIterator(); if
-									 * (this.size() >= MAX_ELEMENT_NUMBER && descIterator.next().compareTo(area) ==
-									 * -1) { if (area.getDelay() == -1) { area.setDelay(System.currentTimeMillis() -
-									 * area.getInsertedForDelay()); } } Iterator<AreaWithProfit> i =
-									 * this.iterator();
-									 * 
-									 * while (i.hasNext()) { AreaWithProfit iArea = i.next(); if (iArea.getCell() ==
-									 * area.getCell()) { i.remove(); break; } }
-									 * 
-									 * boolean result = super.add(area);
-									 * 
-									 * if (this.size() > MAX_ELEMENT_NUMBER) { i = this.descendingIterator();
-									 * i.next(); i.remove(); }
-									 * 
-									 * if (area.getDelay() == -1) { area.setDelay(System.currentTimeMillis() -
-									 * area.getInsertedForDelay()); } return result;
-									 */
+		return toplist.add(newArea);
 	}
 
 	@Override
@@ -130,20 +112,58 @@ public class ProfitableAreaToplistSet /* extends TreeSet<AreaWithProfit> impleme
 
 	}
 
-	public void refreshAreaMedian(Cell cell, Date lastInserted, Double median) {
+	public void refreshAreaMedian(Cell cell, Date lastInserted, BigDecimal median) {
 		AreaWithProfit area = removeByCell(cell);
 
 		if (area == null) {
 			area = new AreaWithProfit(cell, lastInserted);
 			areaMap.put(cell, area);
 		} else {
-			area.setLastInserted(lastInserted);
+			if (median != null) {
+				area.setLastInserted(lastInserted);
+			}
+
 		}
 
-		area.setMedianProfit(median != null ? BigDecimal.valueOf(median) : null);
-		if (BigDecimal.ZERO.compareTo(area.getMedianProfitIndex()) == -1 && lastInserted != null) {
+		area.setMedianProfit(median);
+		if (BigDecimal.ZERO.compareTo(area.getMedianProfitIndex()) == -1) {
 			toplist.add(area);
 		}
 
 	}
+	
+	public void increaseAreaTaxiCount(Cell cell, Date lastInserted) {
+		AreaWithProfit area = removeByCell(cell);
+		if(area == null) {
+			area = new AreaWithProfit(cell, lastInserted);
+			areaMap.put(cell, area);
+		}
+		
+		else if(lastInserted != null) {
+			area.setLastInserted(lastInserted);
+		}
+		area.increaseCountOfTaxes();
+		
+		if (BigDecimal.ZERO.compareTo(area.getMedianProfitIndex()) == -1) {
+			toplist.add(area);
+		}
+		
+	}
+	
+	public void decreaseAreaTaxiCount(Cell cell, Date lastInserted) {
+		AreaWithProfit area = removeByCell(cell);
+		if(area == null && lastInserted != null) {
+			area = new AreaWithProfit(cell, lastInserted);
+			areaMap.put(cell, area);
+		}
+		else if(lastInserted != null) {
+			area.setLastInserted(lastInserted);
+		}
+		area.decreaseCountOfTaxes();
+		if (BigDecimal.ZERO.compareTo(area.getMedianProfitIndex()) == -1) {
+			toplist.add(area);
+		}
+		
+	}
+	
 }
