@@ -26,7 +26,7 @@ public class FrequentRoutesToplistSet/* <T extends Route> extends TreeSet<Route>
 			toplist.remove(containedRoute);
 		}
 
-		;
+		
 		routeMap.put(routeKey, newRoute);
 
 		return toplist.add(newRoute);

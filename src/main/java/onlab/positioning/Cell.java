@@ -2,7 +2,7 @@ package onlab.positioning;
 
 
 
-public class Cell {
+public class Cell implements Comparable<Cell>{
 
 	private int x;
 	private int y;
@@ -59,6 +59,29 @@ public class Cell {
 		if (y != other.y)
 			return false;
 		return true;
+	}
+
+	/**
+	 * Dictionary-like comparison
+	 */
+	@Override
+	public int compareTo(Cell o) {
+		if(this.x > o.x) {
+			return 1;
+		}
+		if(this.x < o.x) {
+			return -1;
+		}
+		
+		if(this.y > o.y) {
+			return 1;
+		}
+		if(this.y < o.y) {
+			return -1;
+		}
+		return 0;
+		
+		
 	}
 
 	

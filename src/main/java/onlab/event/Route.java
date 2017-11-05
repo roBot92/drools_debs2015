@@ -104,16 +104,27 @@ public class Route implements Comparable<Route> {
 		}
 		if (this.frequency < r.frequency) {
 			return 1;
-		} else if (this.frequency == r.frequency) {
-			int result = -(this.lastDropoffTime.compareTo(r.lastDropoffTime));
-			if (result == 0) {
-				return -1;
-			} else {
-				return result;
-			}
-		} else {
+		} 
+		if(this.frequency > r.frequency) {
 			return -1;
 		}
+		
+		
+		int comparison = -(this.lastDropoffTime.compareTo(r.lastDropoffTime));
+		
+		if(comparison != 0) {
+			return comparison;
+		}
+		
+		comparison = - (this.pickup_cell.compareTo(r.pickup_cell));
+		if(comparison != 0) {
+			return comparison;
+		}
+		
+		return - (this.dropoff_cell.compareTo(r.dropoff_cell));
+		
+		
+		
 	}
 	
 

@@ -26,6 +26,8 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 	public AreaWithProfit(Cell cell, Date lastInserted) {
 		this.cell = cell;
 		this.lastInserted = lastInserted;
+		this.medianProfitIndex = BigDecimal.ZERO;
+		this.medianProfit = BigDecimal.ZERO;
 	}
 
 	public Cell getCell() {
@@ -91,8 +93,10 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 		} else if (medianProfitIndex == null) {
 			return 1;
 		}
-		if (medianProfitIndex.compareTo(otherMedian) != 0) {
-			return medianProfitIndex.compareTo(otherMedian) * -1;
+
+		int comparison = -medianProfitIndex.compareTo(otherMedian);
+		if (comparison != 0) {
+			return comparison;
 		}
 
 		if (otherTime == null) {
@@ -101,18 +105,34 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 			return 1;
 		}
 
-		if (lastInserted.compareTo(otherTime) != 0) {
-			return lastInserted.compareTo(otherTime) * -1;
+		comparison = -lastInserted.compareTo(otherTime);
+		if (comparison != 0) {
+			return comparison;
 		}
 
-		return -1;
+		return -this.cell.compareTo(area.cell);
 
 	}
 
+	public boolean valueEquals(AreaWithProfit other) {
+		if(other == null) {
+			return false;
+		}
+		if(other.getCell() != cell) {
+			return false;
+		}
+		if(other.getMedianProfitIndex().compareTo(medianProfitIndex) != 0) {
+			return false;
+		}
+		return true;
+	}
 	@Override
 	public String toString() {
-		return "Cell: " + this.cell + " - Median profit: " + this.medianProfitIndex + " - Dropoff time: " + lastInserted
-				+ "Delay: " + delay + " ms";
+		if(medianProfitIndex.scale() != 2) {
+			medianProfitIndex.setScale(2, RoundingMode.HALF_UP);
+		};
+		return "Cell: " + this.cell + " - Median profit index: " + this.medianProfitIndex + " - Dropoff time: " + lastInserted
+				+ "Delay: " + delay + " ms median:" + medianProfit + " countOfTaxi:" + countOfTaxes;
 	}
 
 	public long getDelay() {
@@ -136,11 +156,13 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 	}
 
 	public void setMedianProfit(BigDecimal medianProfit) {
-		this.medianProfit = medianProfit;
+		this.medianProfit = (medianProfit == null) ? BigDecimal.ZERO : medianProfit;
 
-		if (medianProfit != null) {
+		if (medianProfit.compareTo(BigDecimal.ZERO) > 0) {
 			medianProfitIndex = (countOfTaxes == 0) ? medianProfit
 					: medianProfit.divide(BigDecimal.valueOf(countOfTaxes), 2, RoundingMode.HALF_UP);
+		} else {
+			medianProfitIndex = BigDecimal.ZERO;
 		}
 
 	}
@@ -155,7 +177,7 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 			medianProfitIndex = medianProfit.divide(BigDecimal.valueOf(countOfTaxes == 0 ? 1 : countOfTaxes), 2,
 					RoundingMode.HALF_UP);
 		} else {
-			medianProfit = BigDecimal.ZERO;
+			setMedianProfit(BigDecimal.ZERO);
 		}
 	}
 
@@ -165,7 +187,7 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 
 	public void decreaseCountOfTaxes() {
 		if (countOfTaxes > 0) {
-			setCountOfTaxes(countOfTaxes + 1);
+			setCountOfTaxes(countOfTaxes - 1);
 		}
 
 	}

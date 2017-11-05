@@ -67,7 +67,10 @@ public class Task2Test {
 		kSession.insert(new Tick(clock.getCurrentTime()));
 		kSession.fireAllRules();
 
-		assertTrue("check1", area.equals(toplist.get(0)) && toplist.size() == 1);
+		assertTrue("check1",
+				area.getCell() == toplist.get(0).getCell()
+						&& area.getMedianProfitIndex().compareTo(toplist.get(0).getMedianProfitIndex()) == 0
+						&& toplist.size() == 1);
 
 		clock.advanceTime(60, TimeUnit.SECONDS);
 		tlog2.setDropoff_datetime(new Date(clock.getCurrentTime()));
@@ -172,7 +175,7 @@ public class Task2Test {
 
 		assertTrue("check3", toplist.isEmpty());
 	}
-	
+
 	@Test
 	public void overFlowingAndAging_test() {
 		List<TaxiLog> tlogs = Arrays.asList(
@@ -198,43 +201,45 @@ public class Task2Test {
 			kSession.fireAllRules();
 
 		}
-		
-		/*clock.advanceTime(1, TimeUnit.MINUTES);
-		kSession.insert(new Tick(clock.getCurrentTime()));
-		kSession.fireAllRules();*/
-		
+
+		/*
+		 * clock.advanceTime(1, TimeUnit.MINUTES); kSession.insert(new
+		 * Tick(clock.getCurrentTime())); kSession.fireAllRules();
+		 */
+
 		clock.advanceTime(4, TimeUnit.MINUTES);
 		kSession.insert(new Tick(clock.getCurrentTime(), System.currentTimeMillis()));
 		kSession.fireAllRules();
-		
+
 		System.out.println(toplist);
-		
-		for(int i = 0 ; i < 15; i++){
+
+		for (int i = 0; i < 15; i++) {
 			clock.advanceTime(1, TimeUnit.MINUTES);
 			kSession.insert(new Tick(clock.getCurrentTime(), System.currentTimeMillis()));
 			kSession.fireAllRules();
 			System.out.println(toplist);
 		}
-		
-		/*QueryResults qres = kSession.getQueryResults( "taxis" );
-		TaxiLog tlog = setUpTaxilog(cells.get(0), cells.get(10), BigDecimal.ONE, BigDecimal.ONE, "12");
-		tlog.setPickup_datetime(new Date(clock.getCurrentTime()));
-		clock.advanceTime(1, TimeUnit.MINUTES);
-		tlog.setDropoff_datetime(new Date(clock.getCurrentTime()));
-		
-		kSession.insert(new Tick(clock.getCurrentTime()));
-		kSession.insert(tlog);
-		kSession.fireAllRules();
-		
-		System.out.println(toplist);*/
 
-		/*clock.advanceTime(12, TimeUnit.MINUTES);
-		//debug
-		
-		kSession.insert(new Tick(clock.getCurrentTime()));
-		kSession.fireAllRules();
-		QueryResults qres = kSession.getQueryResults( "areas" );
-		System.out.println(toplist);*/
+		/*
+		 * QueryResults qres = kSession.getQueryResults( "taxis" ); TaxiLog tlog =
+		 * setUpTaxilog(cells.get(0), cells.get(10), BigDecimal.ONE, BigDecimal.ONE,
+		 * "12"); tlog.setPickup_datetime(new Date(clock.getCurrentTime()));
+		 * clock.advanceTime(1, TimeUnit.MINUTES); tlog.setDropoff_datetime(new
+		 * Date(clock.getCurrentTime()));
+		 * 
+		 * kSession.insert(new Tick(clock.getCurrentTime())); kSession.insert(tlog);
+		 * kSession.fireAllRules();
+		 * 
+		 * System.out.println(toplist);
+		 */
+
+		/*
+		 * clock.advanceTime(12, TimeUnit.MINUTES); //debug
+		 * 
+		 * kSession.insert(new Tick(clock.getCurrentTime())); kSession.fireAllRules();
+		 * QueryResults qres = kSession.getQueryResults( "areas" );
+		 * System.out.println(toplist);
+		 */
 
 	}
 
