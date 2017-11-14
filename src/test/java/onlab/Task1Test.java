@@ -107,6 +107,7 @@ public class Task1Test {
 
 	@Test
 	public void test_insertOneTaxiLog() {
+		
 		TaxiLog tlog1 = route1tlogs.get(0);
 		Route route = new Route(tlog1.getPickup_cell(), tlog1.getDropoff_cell(), tlog1.getDropoff_datetime(), 1);
 
@@ -149,41 +150,66 @@ public class Task1Test {
 		kSession.insert(route2tlogs.get(0));
 		kSession.insert(route3tlogs.get(0));
 		kSession.fireAllRules();
-		// System.out.println(toplist);
 
+		Route route1 = new Route(route1tlogs.get(0).getPickup_cell(), route1tlogs.get(0).getDropoff_cell(),
+				route1tlogs.get(0).getDropoff_datetime(), 1);
+		Route route2 = new Route(route2tlogs.get(0).getPickup_cell(), route2tlogs.get(0).getDropoff_cell(),
+				route2tlogs.get(0).getDropoff_datetime(), 1);
+		Route route3 = new Route(route3tlogs.get(0).getPickup_cell(), route3tlogs.get(0).getDropoff_cell(),
+				route3tlogs.get(0).getDropoff_datetime(), 1);
+		assertTrue("check1", toplist.size() == 3 && toplist.get(0).valueEquals(route3)
+				&& toplist.get(1).valueEquals(route2) && toplist.get(2).valueEquals(route1));
+		
+		
 		// Second minute, +1 route1, +1 route2
 		clock.advanceTime(60, TimeUnit.SECONDS);
-
+		kSession.insert(new Tick(clock.getCurrentTime()));
+		
 		route1tlogs.get(1).setDropoff_datetime(new Date(clock.getCurrentTime()));
 		kSession.insert(route1tlogs.get(1));
 		route2tlogs.get(1).setDropoff_datetime(new Date(clock.getCurrentTime()));
 		kSession.insert(route2tlogs.get(1));
 		kSession.fireAllRules();
-		// System.out.println(toplist);
+		
+		route1.setFrequency(2);
+		route1.setLastDropoffTime(new Date(clock.getCurrentTime()));
+		route2.setFrequency(2);
+		route2.setLastDropoffTime(new Date(clock.getCurrentTime()));
+
+		assertTrue("check2", toplist.size() == 3 && toplist.get(0).valueEquals(route2)
+				&& toplist.get(1).valueEquals(route1) && toplist.get(2).valueEquals(route3));
 
 		// Third minute +1 route1
 		clock.advanceTime(60, TimeUnit.SECONDS);
+		kSession.insert(new Tick(clock.getCurrentTime()));
 		route1tlogs.get(2).setDropoff_datetime(new Date(clock.getCurrentTime()));
 		kSession.insert(route1tlogs.get(2));
 		kSession.fireAllRules();
-		// System.out.println(toplist);
-
-		// Fourth minute, +1 route3
-		clock.advanceTime(60, TimeUnit.SECONDS);
-		route3tlogs.get(1).setDropoff_datetime(new Date(clock.getCurrentTime()));
-		kSession.insert(route3tlogs.get(1));
-		kSession.fireAllRules();
-
-		// System.out.println(toplist);
-
-		clock.advanceTime(30, TimeUnit.MINUTES);
-		// clock.advanceTime(1, TimeUnit.SECONDS);
-
+		route1.setFrequency(3);
+		route1.setLastDropoffTime(new Date(clock.getCurrentTime()));
+		kSession.insert(route1tlogs.get(2));
+		assertTrue("check3", toplist.size() == 3 && toplist.get(0).valueEquals(route1)
+				&& toplist.get(1).valueEquals(route2) && toplist.get(2).valueEquals(route3));
+		
+		clock.advanceTime(28, TimeUnit.MINUTES);
 		kSession.insert(new Tick(clock.getCurrentTime()));
 		kSession.fireAllRules();
+		route1.setFrequency(2);
+		route2.setFrequency(1);
+		assertTrue("check4",
+				toplist.size() == 2 && toplist.get(0).valueEquals(route1) && toplist.get(1).valueEquals(route2));
 
-		assertTrue(true);
-		// System.out.println(toplist);
+		clock.advanceTime(1, TimeUnit.MINUTES);
+		kSession.insert(new Tick(clock.getCurrentTime()));
+		kSession.fireAllRules();
+		route1.setFrequency(1);
+
+		assertTrue("check5", toplist.size() == 1 && toplist.get(0).valueEquals(route1));
+
+		clock.advanceTime(1, TimeUnit.MINUTES);
+		kSession.insert(new Tick(clock.getCurrentTime()));
+		kSession.fireAllRules();
+		assertTrue("check6", toplist.size() == 0);
 
 	}
 

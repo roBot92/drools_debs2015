@@ -11,13 +11,12 @@ import onlab.positioning.*
 import org.kie.api.runtime.rule.QueryResults
 import java.math.BigDecimal
 import java.util.ArrayList
-import onlab.utility.CustomTreeMultiset
-
+import java.util.Date
+import accumulate onlab.utility.MedianAccumulateFunction median
 
 
 //declare any global variables here
 global onlab.utility.ProfitableAreaToplistSet mostProfitableAreas
-global onlab.utility.FrequentRoutesToplistSet mostFrequentRoutes
 
 
 
@@ -35,174 +34,102 @@ end
 
 
 
+declare RefreshAreaMedian
+cell : Cell
+insertTime : long
+end
 
-
-
-declare RefreshArea
-@role(fact)
+declare RefreshAreaCount
+cell : Cell
+license : String
+insertTime : long
 end
 
 declare ActivateArea
 @role(fact)
 end
 
-declare ReOrderAreas
-@role(fact)
-end
 
 declare AreaWithProfit
 @role(event)
 @timestamp(lastInserted)
 end
 
+
 rule task1_removeInvalidTaxiLog
 salience 1
 	when
-		$tlog: TaxiLog(pickup_cell == null || dropoff_cell == null)
+		$tlog: TaxiLog(pickup_cell == null || dropoff_cell == null || fare_amount.compareTo(BigDecimal.ZERO) > 0)
 	then
 		retract($tlog);
 end
+
 rule "task2_new_TaxiLog_rule" 
 salience 0
     when
-      $tlog: TaxiLog(!processed, $pickupCell: pickup_cell , $dropoffCell: dropoff_cell , $currentTime: dropoff_datetime , $inserted: inserted )
+      $tlog: TaxiLog(!processed, $pickupCell: pickup_cell , $dropoffCell: dropoff_cell , $currentTime: dropoff_datetime , $inserted: inserted, $hack_license: hack_license )
       
     then
      
       insertLogical(new ActivateArea($pickupCell, $currentTime));
-      insertLogical(new RefreshArea($pickupCell,$currentTime, $inserted));  
-      insertLogical(new RefreshArea($dropoffCell,$currentTime, -1)); 
-      insert(new ReOrderAreas());
+      insert(new RefreshAreaMedian($pickupCell, $currentTime.getTime()));
+      insert(new RefreshAreaCount($dropoffCell, $hack_license, $currentTime.getTime()));
       $tlog.setProcessed(true); 
       update($tlog);
 
 end
 
 
-
-rule "task2_ActivateAreaRule"
-salience 10
-	when
-		ActivateArea($cell : cell, $ctime: currentTime) 
-		not AreaWithProfit($cell == cell)
+rule "task2_activateArea_rule"
+salience 1
+	when 
+		$activateArea:ActivateArea($pickupCell: cell, $currentTime : currentTime)
+		not AreaWithProfit(cell == $pickupCell)
 	then
-		insert(new AreaWithProfit($cell, $ctime)); 
+		insert(new AreaWithProfit($pickupCell, $currentTime));
+		retract($activateArea);
 end
 
-
-
-
-rule "task2_refreshAreaRule"
-salience 20 
-	when
-		$refresh:RefreshArea($ctime: currentTime, $cell:cell, $insertedForDelay : insertedForDelay )
-		$area:AreaWithProfit($cell == cell)
-
-		$median : java.lang.Number() from accumulate 
-        			( TaxiLog($fare: fare_amount , $tip:tip_amount , pickup_cell == $cell, dropoff_datetime.getTime()+15*60*1000 >= $ctime.getTime()),
-        			init(CustomTreeMultiset list = new CustomTreeMultiset();),
-        			action(
-        				list.add($fare.add($tip));
-        			),
-        			reverse(list.remove($fare.add($tip));),
-        			result(list.getMedian())
-        			)
-       $taxiListOfArea: java.util.ArrayList() from collect (TaxiLog(dropoff_cell == $cell) over window:time(30m)) 
-     
-	then	
-	
-		int $numOfEmptyTaxis= 0;
-		for(Object $o : $taxiListOfArea){
-			TaxiLog $tlog = (TaxiLog)$o;
-			QueryResults results =
-    		kcontext.getKnowledgeRuntime().getQueryResults( "task2_newerRidesOfDriver", new Object[]{$tlog.getHack_license(), $tlog.getDropoff_datetime()} );
-    		if(results.size() == 0 ){
-    			$numOfEmptyTaxis++;
-    		}
-		}
-		
-		BigDecimal $medianProfitIndex = ((BigDecimal)$median).divide(($numOfEmptyTaxis == 0 ? BigDecimal.ONE : BigDecimal.valueOf($numOfEmptyTaxis)),2, BigDecimal.ROUND_HALF_UP);
-		
-		$area.setMedianProfitIndex($medianProfitIndex);		
-		
-		//Új taxilog triggerelt, lastinserted és delay változik	
-		if($insertedForDelay != -1){
-			$area.setInsertedForDelay($insertedForDelay);
-			$area.setLastInserted($ctime);
-			$area.setDelay(-1);
-		}
-			
-		//A medián mindenképp változott	
-		update($area);
-		retract($refresh);
-end
-rule "task2_deactivateAreaRule"
-salience 20
-	when
-		$tick: Tick()
-		$area:AreaWithProfit(this before[30m, 999m] $tick)
-	then
-		retract($area);
-end		
-
-
-
-rule "task2_remove_TaxiLog_from_pickupCell"
-salience 9
-    when
-        $tick:Tick($currentTime : currentTime )
-        $taxilogs: ArrayList() from collect (TaxiLog(this before[15m, 999m] $tick && !olderThanAQuarter))
-    then
-    	for(Object o : $taxilogs){
-    		TaxiLog $tlog = (TaxiLog)o;
-    		$tlog.setOlderThanAQuarter(true);    		
-    		update($tlog);
-    		insertLogical(new RefreshArea($tlog.getPickup_cell(), new java.util.Date($currentTime) , -1));
-    	}
-    	
-    	if($taxilogs!=null && !$taxilogs.isEmpty()){
-    		insert(new ReOrderAreas());
-    	}
-  		
-        
-
-end
-
-rule "task2_remove_TaxiLog_from_WM"
-salience 4
-    when
-        $tick:Tick($currentTime : currentTime )
-        $taxilogs: ArrayList() from collect (TaxiLog(this before[30m, 999m] $tick))
-    then
-    	for(Object o : $taxilogs){
-    		TaxiLog $tlog = (TaxiLog)o;
-    		Cell $dropoffCell = $tlog.getDropoff_cell();
-    		retract($tlog);
-    		insertLogical(new RefreshArea($dropoffCell, new java.util.Date($currentTime) , -1));
-    	}
-    	if($taxilogs!=null && !$taxilogs.isEmpty()){
-      	insert(new ReOrderAreas());
-        }
-
-end
-
-//After all rules, we collect all ReOrderAreas rule, to ensure that we make reordering only once.
-rule "task2_reorderAreasRule"
+rule "task2_refreshAreaMedian_rule"
 salience -1
 	when
-		ReOrderAreas()
-		$allReorderCollection: java.util.ArrayList() from collect (ReOrderAreas())
-		$areas:  java.util.ArrayList() from collect( AreaWithProfit() )
+		RefreshAreaMedian($cell:cell)
+		$area:AreaWithProfit(cell == $cell)
+		$refList: ArrayList() from collect (RefreshAreaMedian($cell == cell))
+		$medianOfCell: BigDecimal() from accumulate 
+				(TaxiLog(pickup_cell == $cell, $fare:fare_amount, $tip:tip_amount) over window:time(15m), 
+					median($fare.add($tip)))		
 	then
-		mostProfitableAreas.clear();
-		if($areas != null){
-		mostProfitableAreas.addAll($areas);
-		$areas.clear();
-		}
-		for(Object $reorder : $allReorderCollection ){
-			retract($reorder);
-		}
-		
+		if($medianOfCell.compareTo(BigDecimal.ZERO) == 0){
+			mostProfitableAreas.remove($area);
+			retract($area);
+			for(Object $o : $refList){
+				retract($o);
+			}
+		} else{
+			long $ctime = -1;
+			for(Object $o : $refList){
+				RefreshAreaMedian $ram = (RefreshAreaMedian) $o;
+				if($ram.getInsertTime() > -1){
+					$ctime = $ram.getInsertTime();
+				}
+				retract($o);
+			}
+			if($ctime != -1){
+				$area.setLastInserted(new Date($ctime));
+			}
+			$area.setMedianProfit($medianOfCell);
+			mostProfitableAreas.add($area);
+		}	
+end
+
+rule "task2_refreshAreaCount_rule"
+salience -1
+	when
+		RefreshAreaCount($cell:cell)
+		$area:AreaWithProfit(cell == $cell)
+	then
+		$area.increaseCountOfTaxes();
 end
 
 
@@ -211,7 +138,11 @@ end
 
 
 
-query "task2_newerRidesOfDriver"  (String $license, java.util.Date $threshold)
+
+
+
+
+query "task2_ridesOfDriver"  (String $license, java.util.Date $threshold)
 
       tlog:TaxiLog(hack_license.equals($license) , $threshold.before(dropoff_datetime) )
 end

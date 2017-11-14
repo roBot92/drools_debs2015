@@ -19,17 +19,12 @@ public class FrequentRoutesToplistSet/* <T extends Route> extends TreeSet<Route>
 
 	public boolean add(Route newRoute) {
 
-		MultiKey routeKey = new MultiKey(newRoute.getPickup_cell(), newRoute.getDropoff_cell());
-		Route containedRoute = routeMap.get(routeKey);
-
-		if (containedRoute != null) {
-			toplist.remove(containedRoute);
+		if(newRoute == null) {
+			return false;
 		}
-
 		
-		routeMap.put(routeKey, newRoute);
-
-		return toplist.add(newRoute);
+		refreshRoute(newRoute.getPickup_cell(), newRoute.getDropoff_cell(), newRoute.getLastDropoffTime(), newRoute.getFrequency());
+		return true;
 	}
 
 	@Override
@@ -62,16 +57,30 @@ public class FrequentRoutesToplistSet/* <T extends Route> extends TreeSet<Route>
 		return iterator.next();
 	}
 
-	public boolean contains(Object o) {
-		if (o == null || !(o instanceof Route)) {
+	public boolean setContains(Route route) {
+		if (route == null) {
 			return false;
 		}
-
-		Route route = (Route) o;
-
 		Route containedRoute = routeMap.get(new MultiKey(route.getPickup_cell(), route.getDropoff_cell()));
 
 		return toplist.contains(containedRoute);
+	}
+
+	public boolean contains(Route route) {
+		if(route == null) {
+			return false;
+		}
+		for (int i = 0; i < MAX_ELEMENT_NUMBER; i++) {
+			Route tRoute = get(i);
+			if (tRoute == null) {
+				return false;
+			}
+			if(tRoute.equals(route)) {
+				return true;
+			}
+
+		}
+		return false;
 	}
 
 	public Route remove(Cell pickupCell, Cell dropoffCell) {
@@ -83,9 +92,16 @@ public class FrequentRoutesToplistSet/* <T extends Route> extends TreeSet<Route>
 
 		return removable;
 	}
+	
+	public Route remove(Route route) {
+		if(route == null) {
+			return null;
+		}
+		return remove(route.getPickup_cell(), route.getDropoff_cell());
+	}
 
 	// for Esper implementation
-	public void refreshRoute(Cell pickupCell, Cell dropoffCell, Date lastDropoffTime, int frequency) {
+	public void refreshRoute(Cell pickupCell, Cell dropoffCell, Date lastDropoffTime, long frequency) {
 		Route route = remove(pickupCell, dropoffCell);
 
 		if (route == null) {
@@ -129,9 +145,12 @@ public class FrequentRoutesToplistSet/* <T extends Route> extends TreeSet<Route>
 	}
 
 	public long size() {
-		return toplist.size();
+		return toplist.size() < MAX_ELEMENT_NUMBER ? toplist.size() : MAX_ELEMENT_NUMBER;
 	}
 
+	public long getSetSize() {
+		return toplist.size();
+	}
 	/*
 	 * private Route getByCells(Cell pickupCell, Cell dropoffCell) { for(Route route
 	 * : this) { if(route.getPickup_cell() == pickupCell && route.getDropoff_cell()

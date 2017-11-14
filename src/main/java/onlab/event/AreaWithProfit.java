@@ -124,6 +124,10 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 		if(other.getMedianProfitIndex().compareTo(medianProfitIndex) != 0) {
 			return false;
 		}
+		
+		if(other.lastInserted.compareTo(lastInserted) != 0) {
+			return false;
+		}
 		return true;
 	}
 	@Override
@@ -186,9 +190,9 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 	}
 
 	public void decreaseCountOfTaxes() {
-		if (countOfTaxes > 0) {
+		//if (countOfTaxes > 0) {
 			setCountOfTaxes(countOfTaxes - 1);
-		}
+		//}
 
 	}
 

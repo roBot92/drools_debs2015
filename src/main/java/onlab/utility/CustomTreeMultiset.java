@@ -49,4 +49,7 @@ public class CustomTreeMultiset {
 		return iterator.next();
 	}
 
+	public void clear() {
+		multiSet.clear();
+	}
 }

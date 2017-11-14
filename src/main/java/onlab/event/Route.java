@@ -97,6 +97,16 @@ public class Route implements Comparable<Route> {
 		return false;
 	}
 
+	public boolean valueEquals(Route route) {
+			if (this == route)
+				return true;
+			if (route == null)
+				return false;
+			if(pickup_cell == route.pickup_cell && dropoff_cell == route.dropoff_cell && frequency == route.frequency && lastDropoffTime.compareTo(route.lastDropoffTime) == 0) {
+				return true;
+			}
+			return false;
+	}
 	@Override
 	public int compareTo(Route r) {
 		if (this.equals(r)) {

@@ -80,7 +80,7 @@ public class Task2Test {
 		kSession.insert(tlog2);
 		kSession.fireAllRules();
 
-		assertTrue("check2", area.equals(toplist.get(0)) && toplist.size() == 1);
+		assertTrue("check2", area.valueEquals(toplist.get(0)) && toplist.size() == 1);
 
 	}
 
@@ -104,7 +104,7 @@ public class Task2Test {
 
 		kSession.fireAllRules();
 
-		assertTrue(toplist.size() == 2 && area1.equals(toplist.get(0)) && area2.equals(toplist.get(1)));
+		assertTrue(toplist.size() == 2 && area1.valueEquals(toplist.get(0)) && area2.valueEquals(toplist.get(1)));
 
 	}
 
@@ -127,7 +127,7 @@ public class Task2Test {
 		kSession.insert(tlogs.get(3));
 
 		kSession.fireAllRules();
-		assertTrue("firstCheck", toplist.size() == 2 && area1.equals(toplist.get(0)) && area2.equals(toplist.get(1)));
+		assertTrue("firstCheck", toplist.size() == 2 && area1.valueEquals(toplist.get(0)) && area2.valueEquals(toplist.get(1)));
 
 		clock.advanceTime(10, TimeUnit.MINUTES);
 		tlogs.get(4).setDropoff_datetime(new Date(clock.getCurrentTime()));
@@ -137,7 +137,7 @@ public class Task2Test {
 
 		area1.setLastInserted(new Date(clock.getCurrentTime()));
 		area1.setMedianProfitIndex(BigDecimal.valueOf(11));
-		assertTrue("secondCheck", toplist.size() == 2 && area1.equals(toplist.get(0)) && area2.equals(toplist.get(1)));
+		assertTrue("secondCheck", toplist.size() == 2 && area1.valueEquals(toplist.get(0)) && area2.valueEquals(toplist.get(1)));
 	}
 
 	@Test
@@ -159,7 +159,7 @@ public class Task2Test {
 		AreaWithProfit area = new AreaWithProfit(cells.get(0), BigDecimal.valueOf(6.5),
 				new Date(clock.getCurrentTime()));
 
-		assertTrue("check1", area.equals(toplist.get(0)) && toplist.size() == 1);
+		assertTrue("check1", area.valueEquals(toplist.get(0)) && toplist.size() == 1);
 
 		clock.advanceTime(15, TimeUnit.MINUTES);
 		kSession.insert(new Tick(clock.getCurrentTime()));
@@ -167,7 +167,7 @@ public class Task2Test {
 
 		area.setMedianProfitIndex(BigDecimal.valueOf(11));
 
-		assertTrue("check2", area.equals(toplist.get(0)) && toplist.size() == 1);
+		assertTrue("check2", area.valueEquals(toplist.get(0)) && toplist.size() == 1);
 
 		clock.advanceTime(61, TimeUnit.SECONDS);
 		kSession.insert(new Tick(clock.getCurrentTime()));
