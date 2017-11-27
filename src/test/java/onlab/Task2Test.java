@@ -46,9 +46,9 @@ public class Task2Test {
 		KieServices ks = KieServices.Factory.get();
 		KieContainer kContainer = ks.getKieClasspathContainer();
 		KieSessionConfiguration config = ks.newKieSessionConfiguration();
+		
 
 		config.setOption(ClockTypeOption.get("pseudo"));
-
 		kSession = kContainer.newKieSession("ksession-rules", config);
 		clock = kSession.getSessionClock();
 
@@ -78,6 +78,7 @@ public class Task2Test {
 		area.setMedianProfitIndex(BigDecimal.valueOf(6.5));
 
 		kSession.insert(tlog2);
+		kSession.insert(new Tick(clock.getCurrentTime()));
 		kSession.fireAllRules();
 
 		assertTrue("check2", area.valueEquals(toplist.get(0)) && toplist.size() == 1);
@@ -98,10 +99,11 @@ public class Task2Test {
 		BigDecimal medianProfit2 = BigDecimal.valueOf(2).divide(emptyTaxes, 2, BigDecimal.ROUND_HALF_UP);
 		AreaWithProfit area1 = new AreaWithProfit(cells.get(0), medianProfit1, new Date(clock.getCurrentTime()));
 		AreaWithProfit area2 = new AreaWithProfit(cells.get(1), medianProfit2, new Date(clock.getCurrentTime()));
+		kSession.insert(new Tick(clock.getCurrentTime()));
 		for (TaxiLog tlog : tlogs) {
 			kSession.insert(tlog);
 		}
-
+		
 		kSession.fireAllRules();
 
 		assertTrue(toplist.size() == 2 && area1.valueEquals(toplist.get(0)) && area2.valueEquals(toplist.get(1)));
@@ -126,13 +128,14 @@ public class Task2Test {
 		kSession.insert(tlogs.get(2));
 		kSession.insert(tlogs.get(3));
 
+		kSession.insert(new Tick(clock.getCurrentTime()));
 		kSession.fireAllRules();
 		assertTrue("firstCheck", toplist.size() == 2 && area1.valueEquals(toplist.get(0)) && area2.valueEquals(toplist.get(1)));
 
 		clock.advanceTime(10, TimeUnit.MINUTES);
 		tlogs.get(4).setDropoff_datetime(new Date(clock.getCurrentTime()));
 		kSession.insert(tlogs.get(4));
-
+		kSession.insert(new Tick(clock.getCurrentTime()));
 		kSession.fireAllRules();
 
 		area1.setLastInserted(new Date(clock.getCurrentTime()));
@@ -145,6 +148,7 @@ public class Task2Test {
 		TaxiLog tlog1 = setUpTaxilog(cells.get(0), cells.get(1), BigDecimal.ONE, BigDecimal.ONE, "1");
 
 		kSession.insert(tlog1);
+		kSession.insert(new Tick(clock.getCurrentTime()));
 		kSession.fireAllRules();
 		TaxiLog tlog2 = setUpTaxilog(cells.get(0), cells.get(1), BigDecimal.ONE, BigDecimal.TEN, "2");
 
@@ -169,7 +173,7 @@ public class Task2Test {
 
 		assertTrue("check2", area.valueEquals(toplist.get(0)) && toplist.size() == 1);
 
-		clock.advanceTime(61, TimeUnit.SECONDS);
+		clock.advanceTime(121, TimeUnit.SECONDS);
 		kSession.insert(new Tick(clock.getCurrentTime()));
 		kSession.fireAllRules();
 

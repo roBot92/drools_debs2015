@@ -24,7 +24,7 @@ import onlab.utility.ProfitableAreaToplistSet;
 
 public class DebsMain {
 
-	public static String DATA_FILE_URL = "C:\\Users\\Boti\\git\\onlab_tavasz\\src\\main\\resources\\onlab\\sorted_data.csv";
+	public static String DATA_FILE_URL = "C:\\Users\\Boti\\Desktop\\önlab\\sorted_data.csv";
 	public static String DELIMITER = ",";
 	public static int columncount = 17;
 	public static BigDecimal FIRST_CELL_X = BigDecimal.valueOf(-74.913585);
@@ -35,8 +35,8 @@ public class DebsMain {
 
 	public static void main(String[] args) throws FileNotFoundException, ParseException {
 
-		//runTask1();
-		 runTask2();
+		runTask1();
+		// runTask2();
 	}
 
 	

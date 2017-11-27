@@ -1,6 +1,7 @@
 package onlab.utility;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -8,8 +9,9 @@ import com.google.common.collect.TreeMultiset;
 
 public class CustomTreeMultiset {
 
+	private static BigDecimal TWO = BigDecimal.valueOf(2);
 	private TreeMultiset<BigDecimal> multiSet = TreeMultiset
-			.create((n1, n2) -> Double.compare(n1.doubleValue(), n2.doubleValue()));
+			.create((n1, n2) ->  n1.compareTo(n2));
 
 	public boolean add(BigDecimal element) {
 		return multiSet.add(element);
@@ -39,9 +41,9 @@ public class CustomTreeMultiset {
 			for (int i = 0; i < listSize / 2 - 1; i++) {
 				iterator.next();
 			}
-			Number number1 = iterator.next();
-			Number number2 = iterator.next();
-			return BigDecimal.valueOf((number1.doubleValue() + number2.doubleValue()) / 2);
+			BigDecimal number1 = iterator.next();
+			BigDecimal number2 = iterator.next();
+			return number1.add(number2).divide(TWO, 2, RoundingMode.HALF_UP);
 		}
 		for (int i = 0; i < listSize / 2; i++) {
 			iterator.next();

@@ -21,6 +21,8 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 		this.cell = cell;
 		this.medianProfitIndex = medianProfitIndex;
 		this.lastInserted = lastInserted;
+		
+		
 	}
 
 	public AreaWithProfit(Cell cell, Date lastInserted) {
@@ -28,6 +30,8 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 		this.lastInserted = lastInserted;
 		this.medianProfitIndex = BigDecimal.ZERO;
 		this.medianProfit = BigDecimal.ZERO;
+	
+		
 	}
 
 	public Cell getCell() {

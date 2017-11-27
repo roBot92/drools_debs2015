@@ -23,7 +23,13 @@ public class FrequentRoutesToplistSet/* <T extends Route> extends TreeSet<Route>
 			return false;
 		}
 		
-		refreshRoute(newRoute.getPickup_cell(), newRoute.getDropoff_cell(), newRoute.getLastDropoffTime(), newRoute.getFrequency());
+		MultiKey key = new MultiKey(newRoute.getPickup_cell(), newRoute.getDropoff_cell());		
+		Route oldRoute = routeMap.put(key, newRoute);
+		
+		toplist.remove(oldRoute);
+		if(newRoute.getFrequency() > 0 && newRoute.getLastDropoffTime() == null){
+			toplist.add(newRoute);
+		}
 		return true;
 	}
 

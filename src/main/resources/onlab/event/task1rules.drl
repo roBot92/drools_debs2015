@@ -4,9 +4,8 @@ package onlab.event
 
 
 
-
+/*
 //list any import classes here.
-//import accumulate MedianAccumulateFunction medianf
 import onlab.positioning.*
 import org.kie.api.runtime.rule.QueryResults
 import java.math.BigDecimal
@@ -20,7 +19,7 @@ global onlab.utility.ProfitableAreaToplistSet mostProfitableAreas
 global onlab.utility.FrequentRoutesToplistSet mostFrequentRoutes
 
 
-/*
+
 declare TaxiLog
 @role(event)
 @timestamp(dropoff_datetime)

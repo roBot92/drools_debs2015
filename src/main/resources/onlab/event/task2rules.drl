@@ -1,5 +1,3 @@
-
-//created on: 2017.03.29.
 package onlab.event
 
 
@@ -17,10 +15,10 @@ import accumulate onlab.utility.MedianAccumulateFunction median
 
 //declare any global variables here
 global onlab.utility.ProfitableAreaToplistSet mostProfitableAreas
+ 
 
 
-
-declare TaxiLog
+declare TaxiLog 
 @role(event)
 @timestamp(dropoff_datetime)
 @expires( 31m )
@@ -49,6 +47,13 @@ declare ActivateArea
 @role(fact)
 end
 
+declare TaxiLocation
+@role(event)
+cell:Cell
+license:String
+currentTime:Date @timestamp
+end
+
 
 declare AreaWithProfit
 @role(event)
@@ -56,11 +61,12 @@ declare AreaWithProfit
 end
 
 
-rule task1_removeInvalidTaxiLog
+rule task2_removeInvalidTaxiLog
 salience 1
 	when
-		$tlog: TaxiLog(pickup_cell == null || dropoff_cell == null || fare_amount.compareTo(BigDecimal.ZERO) > 0)
+		$tlog: TaxiLog(pickup_cell == null || dropoff_cell == null || fare_amount.compareTo(BigDecimal.ZERO) < 1)
 	then
+		
 		retract($tlog);
 end
 
@@ -70,8 +76,9 @@ salience 0
       $tlog: TaxiLog(!processed, $pickupCell: pickup_cell , $dropoffCell: dropoff_cell , $currentTime: dropoff_datetime , $inserted: inserted, $hack_license: hack_license )
       
     then
-     
+    
       insertLogical(new ActivateArea($pickupCell, $currentTime));
+      insertLogical(new ActivateArea($dropoffCell, $currentTime));
       insert(new RefreshAreaMedian($pickupCell, $currentTime.getTime()));
       insert(new RefreshAreaCount($dropoffCell, $hack_license, $currentTime.getTime()));
       $tlog.setProcessed(true); 
@@ -86,27 +93,34 @@ salience 1
 		$activateArea:ActivateArea($pickupCell: cell, $currentTime : currentTime)
 		not AreaWithProfit(cell == $pickupCell)
 	then
+		
 		insert(new AreaWithProfit($pickupCell, $currentTime));
-		retract($activateArea);
 end
 
 rule "task2_refreshAreaMedian_rule"
 salience -1
 	when
+		$tick:Tick(  )
 		RefreshAreaMedian($cell:cell)
 		$area:AreaWithProfit(cell == $cell)
 		$refList: ArrayList() from collect (RefreshAreaMedian($cell == cell))
 		$medianOfCell: BigDecimal() from accumulate 
-				(TaxiLog(pickup_cell == $cell, $fare:fare_amount, $tip:tip_amount) over window:time(15m), 
-					median($fare.add($tip)))		
+				(TaxiLog(pickup_cell == $cell, $fare:fare_amount, $tip:tip_amount,this before[0m,14m59s] $tick), 
+					median($fare.add($tip)))					
 	then
+		
+		
+		//Ez itt úgy tûnik, hogy holtág, nem fut a medián, ha nem kap taxilogot, így ZERO medián sem lehet. Vagy mégsem.
 		if($medianOfCell.compareTo(BigDecimal.ZERO) == 0){
+			//System.out.println("what??????");
 			mostProfitableAreas.remove($area);
-			retract($area);
+			$area.setMedianProfit($medianOfCell);
+			update($area);
 			for(Object $o : $refList){
 				retract($o);
 			}
 		} else{
+			mostProfitableAreas.remove($area);
 			long $ctime = -1;
 			for(Object $o : $refList){
 				RefreshAreaMedian $ram = (RefreshAreaMedian) $o;
@@ -118,25 +132,103 @@ salience -1
 			if($ctime != -1){
 				$area.setLastInserted(new Date($ctime));
 			}
+			
 			$area.setMedianProfit($medianOfCell);
+			update($area);
 			mostProfitableAreas.add($area);
 		}	
 end
 
-rule "task2_refreshAreaCount_rule"
-salience -1
+//Ez azért kell, mert a másik refresh nem fut le, ha nincs már TaxiLog a területhez 15 percen belül. A prioritása szigorúan kisebb, mint a refreshAreaMedian rule-nak.
+rule "task2_RefreshAreaMedianToNull"
+salience -2
 	when
-		RefreshAreaCount($cell:cell)
+		Tick()
+		RefreshAreaMedian($cell:cell)
 		$area:AreaWithProfit(cell == $cell)
+		$refList: ArrayList() from collect (RefreshAreaMedian($cell == cell))
 	then
-		$area.increaseCountOfTaxes();
+		System.out.println("task2_RefreshAreaMedianToNull");
+		mostProfitableAreas.remove($area);
+		$area.setMedianProfit(BigDecimal.ZERO);
+		for(Object $o : $refList){
+			retract($o);
+		}
 end
 
 
+rule "task2_increaseAreaCount_rule"
+salience -1
+	when
+		$ref:RefreshAreaCount($cell:cell, $time:insertTime, $license:license)
+		$area:AreaWithProfit( $cell==cell )
+	then 
+		mostProfitableAreas.remove($area);
+		$area.increaseCountOfTaxes();
+		if($time > -1){
+			$area.setLastInserted(new Date($time));
+		}
+		
+		update($area);
+		mostProfitableAreas.add($area);
+		insert(new TaxiLocation($cell, $license, new Date($time)));    	 
+		retract($ref);
+end
 
 
+rule "task2_decreaseTaxiCountOnDriversPreviousCell"
+salience -2
+	when
+		$newTlocation: TaxiLocation($license:license)
+		$oldTlocation: TaxiLocation(license.equals($license), $cell:cell, this before $newTlocation)
+		$area:AreaWithProfit( cell == $cell )
+	then
+	//	System.out.println("task2_decreaseTaxiCountOnDriversPreviousCell");
+		mostProfitableAreas.remove($area);
+		$area.decreaseCountOfTaxes();
+		update($area);
+		mostProfitableAreas.add($area);
+		retract($oldTlocation);
+end
 
+rule "task2_expiringTaxiLocationRule"
+salience 1
+	when
+		$tick:Tick()
+		$tlocation:TaxiLocation($cell:cell, this before[30m,*] $tick)
+		$area:AreaWithProfit( cell == $cell )
+	then
+	//	System.out.println("expiringTaxiLocation");
+		mostProfitableAreas.remove($area);
+		$area.decreaseCountOfTaxes();
+		update($area);
+		mostProfitableAreas.add($area);
+		
+		retract($tlocation);
+end
+	
+rule "task2_refreshMedianAfter15Min"
+salience 1
+	when
+		$tick:Tick()
+		$tlog:TaxiLog(!olderThanAQuarter, this before[15m1s,*] $tick)	
+	then
+		
+		$tlog.setOlderThanAQuarter(true);
+		update($tlog);	
+		insert(new RefreshAreaMedian($tlog.getPickup_cell(), -1));
+end
 
+rule "taxsk2_deactivateArea"
+salience -5
+	when
+		$tick:Tick(  )
+		$area: AreaWithProfit(countOfTaxes == 0, medianProfit.compareTo(BigDecimal.ZERO)<1, this before[30m1s,*] $tick )
+	then
+		mostProfitableAreas.remove($area);
+		retract($area);
+end
+		
 
 
 
@@ -156,4 +248,3 @@ end
 query "taxis"()
 	taxis: TaxiLog()
 end
-

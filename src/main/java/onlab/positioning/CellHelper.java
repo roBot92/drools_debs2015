@@ -77,12 +77,12 @@ public class CellHelper {
 
 		cells = new HashMap<Tuple, Cell>();
 
-		for (int i = 1; i <= resolution; i++) {
+	/*	for (int i = 1; i <= resolution; i++) {
 			for (int j = 1; j <= resolution; j++) {
 
 				cells.put(new Tuple(i, j), new Cell(i, j));
 			}
-		}
+		}*/
 	}
 
 	public Cell getCell(Coordinate coordinate) {
@@ -99,7 +99,14 @@ public class CellHelper {
 			return null;
 		}
 
-		return cells.get(new Tuple(tupleX, tupleY));
+		Tuple key = new Tuple(tupleX, tupleY);
+		Cell cell = cells.get(key);
+		if(cell == null){
+			cell = new Cell(tupleX, tupleY);
+			cells.put(key, cell);			
+		}
+		
+		return cell;
 
 	}
 

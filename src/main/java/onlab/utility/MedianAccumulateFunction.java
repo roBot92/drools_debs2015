@@ -8,22 +8,43 @@ import java.math.BigDecimal;
 
 import org.kie.api.runtime.rule.AccumulateFunction;
 
-public class MedianAccumulateFunction implements AccumulateFunction<MedianAccumulateFunction.MedianData> {
+public class MedianAccumulateFunction implements AccumulateFunction/*<MedianAccumulateFunction.MedianData>*/ {
 
+	private static final long serialVersionUID = 1L;
+	public CustomTreeMultiset multiSet = new CustomTreeMultiset();
 	public static class MedianData implements Serializable {
 
 		private static final long serialVersionUID = 1L;
 		public CustomTreeMultiset multiSet = new CustomTreeMultiset();
 	}
-
 	@Override
-	public void readExternal(ObjectInput arg0) throws IOException, ClassNotFoundException {
-
+	public void writeExternal(ObjectOutput out) throws IOException {
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
-	public void writeExternal(ObjectOutput arg0) throws IOException {
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		// TODO Auto-generated method stub
+		
+	}
 
+	@Override
+	public void accumulate(Serializable context, Object value) {
+		BigDecimal number = (BigDecimal) value;
+		((MedianData)context).multiSet.add(number);
+
+		
+	}
+
+	@Override
+	public Serializable createContext() {
+		return new MedianData();
+	}
+
+	@Override
+	public Object getResult(Serializable context) throws Exception {
+		return ((MedianData)context).multiSet.getMedian();
 	}
 
 	@Override
@@ -32,37 +53,19 @@ public class MedianAccumulateFunction implements AccumulateFunction<MedianAccumu
 	}
 
 	@Override
+	public void init(Serializable context) throws Exception {
+		((MedianData)context).multiSet.clear();
+		
+	}
+
+	@Override
+	public void reverse(Serializable context, Object value) throws Exception {
+		((MedianData)context).multiSet.remove(value);
+		
+	}
+
+	@Override
 	public boolean supportsReverse() {
 		return true;
 	}
-
-	@Override
-	public MedianData createContext() {
-		return new MedianData();
-	}
-
-	@Override
-	public void init(MedianData context) throws Exception {
-		context.multiSet.clear();
-
-	}
-
-	@Override
-	public void accumulate(MedianData context, Object value) {
-		BigDecimal number = (BigDecimal) value;
-		context.multiSet.add(number);
-
-	}
-
-	@Override
-	public void reverse(MedianData context, Object value) throws Exception {
-		context.multiSet.remove(value);
-
-	}
-
-	@Override
-	public Object getResult(MedianData context) throws Exception {
-		return context.multiSet.getMedian();
-	}
-
 }

@@ -10,7 +10,7 @@ import java.util.TreeSet;
 import onlab.event.AreaWithProfit;
 import onlab.positioning.Cell;
 
-public class ProfitableAreaToplistSet /* extends TreeSet<AreaWithProfit> implements SortedSet<AreaWithProfit> */ {
+public class ProfitableAreaToplistSet {
 
 	private static int MAX_ELEMENT_NUMBER = 10;
 
@@ -19,16 +19,21 @@ public class ProfitableAreaToplistSet /* extends TreeSet<AreaWithProfit> impleme
 
 	public boolean add(AreaWithProfit newArea) {
 
+		if(newArea == null){
+			return false;
+		}
 		AreaWithProfit containedArea = areaMap.get(newArea.getCell());
 
 		if (containedArea != null) {
 			toplist.remove(containedArea);
 		}
 
-		toplist.add(newArea);
 		areaMap.put(newArea.getCell(), newArea);
-
-		return toplist.add(newArea);
+		
+		if(newArea.getMedianProfitIndex().compareTo(BigDecimal.ZERO) > 0){
+			toplist.add(newArea);
+		}
+		return true;
 	}
 
 	@Override
@@ -111,9 +116,6 @@ public class ProfitableAreaToplistSet /* extends TreeSet<AreaWithProfit> impleme
 				toplist.add(area);
 			}
 		}
-		if(cell.equals(new Cell(163,155))) {
-			System.out.println(area.getLastInserted() + " count: " + area.getCountOfTaxes() + " median:" + area.getMedianProfit());
-		}
 
 	}
 
@@ -140,10 +142,6 @@ public class ProfitableAreaToplistSet /* extends TreeSet<AreaWithProfit> impleme
 			toplist.add(area);
 		}
 		
-		if(cell.equals(new Cell(163,155))) {
-			System.out.println(area.getLastInserted() + " count: " + area.getCountOfTaxes() + " median:" + area.getMedianProfit());
-		}
-
 	}
 	
 	public void increaseAreaTaxiCount(Cell cell, Date lastInserted) {
@@ -161,9 +159,6 @@ public class ProfitableAreaToplistSet /* extends TreeSet<AreaWithProfit> impleme
 		if (BigDecimal.ZERO.compareTo(area.getMedianProfitIndex()) == -1) {
 			toplist.add(area);
 		}
-		if(cell.equals(new Cell(163,155))) {
-			System.out.println(area.getLastInserted() + " count: " + area.getCountOfTaxes() + " median:" + area.getMedianProfit());
-		}
 	}
 	
 	public void decreaseAreaTaxiCount(Cell cell, Date lastInserted) {
@@ -179,10 +174,6 @@ public class ProfitableAreaToplistSet /* extends TreeSet<AreaWithProfit> impleme
 		if (BigDecimal.ZERO.compareTo(area.getMedianProfitIndex()) == -1) {
 			toplist.add(area);
 		}
-		if(cell.equals(new Cell(163,155))) {
-			System.out.println(area.getLastInserted() + " count: " + area.getCountOfTaxes() + " median:" + area.getMedianProfit());
-		}
-		
 		
 	}
 	
