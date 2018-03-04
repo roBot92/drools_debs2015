@@ -42,7 +42,7 @@ public class ProfitableAreaToplistSet {
 		int counter = 1;
 
 		Iterator<AreaWithProfit> iterator = toplist.iterator();
-		while (iterator.hasNext()/* && counter < MAX_ELEMENT_NUMBER + 1*/) {
+		while (iterator.hasNext() && counter < MAX_ELEMENT_NUMBER + 1) {
 			builder.append((counter++) + iterator.next().toString() + "\n");
 		}
 

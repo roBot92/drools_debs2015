@@ -3,8 +3,8 @@
 package onlab.event
 
 
-
 /*
+
 //list any import classes here.
 import onlab.positioning.*
 import org.kie.api.runtime.rule.QueryResults
@@ -96,8 +96,9 @@ salience -1
 		 )
 		
 	then
+		mostFrequentRoutes.remove($route);
 		if($countOfRoutes.intValue() == 0){
-			mostFrequentRoutes.remove($route);
+			
 			retract($route);
 			for(Object $o : $refList){
 				retract($o);

@@ -14,7 +14,6 @@ import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.KieSessionConfiguration;
 import org.kie.api.runtime.conf.ClockTypeOption;
 
-
 import onlab.event.TaxiLog;
 import onlab.event.Tick;
 import onlab.positioning.*;
@@ -31,15 +30,13 @@ public class DebsMain {
 	public static BigDecimal FIRST_CELL_Y = BigDecimal.valueOf(41.474937);
 	public static BigDecimal SHIFT_Y = BigDecimal.valueOf(0.004491556);
 	public static BigDecimal SHIFT_X = BigDecimal.valueOf(0.005986);
-	public static long TEST_INTERVAL_IN_IN_MS = 1 * 60 * 60 * 1000;
+	public static long TEST_INTERVAL_IN_IN_MS = 7 * 24 * 60 * 60 * 1000;
 
 	public static void main(String[] args) throws FileNotFoundException, ParseException {
 
-		runTask1();
-		// runTask2();
+		//runTask1();
+		runTask2();
 	}
-
-	
 
 	public static void runTask1() {
 		List<TaxiLog> taxiLogs = null;
@@ -55,16 +52,14 @@ public class DebsMain {
 			// Adding global toplist to the session
 			kSession.setGlobal("mostFrequentRoutes", mostFrequentRoutes);
 
-
 			SessionPseudoClock clock = kSession.getSessionClock();
-			
 
 			taxiLogs = dataFileParser.parseNextLinesFromCSVGroupedByDropoffDate();
 			long currentTime = DataFileParser.getCURRENT_TIME();
 			long startingTime = DataFileParser.getCURRENT_TIME();
-			
+
 			clock.advanceTime(startingTime, TimeUnit.MILLISECONDS);
-			
+
 			long counter = taxiLogs.size();
 			while (currentTime - startingTime <= TEST_INTERVAL_IN_IN_MS) {
 				kSession.insert(new Tick(currentTime));
@@ -77,9 +72,9 @@ public class DebsMain {
 					taxiLogs = dataFileParser.parseNextLinesFromCSVGroupedByDropoffDate();
 					// System.out.println(freqRouteToplist);
 				}
-				
+
 				kSession.fireAllRules();
-				
+
 				if ((currentTime - startingTime) % (1000 * 60 * 60) == 0) {
 					System.out.println(mostFrequentRoutes);
 					System.out.println("current time:" + new Date(clock.getCurrentTime()) + " processed:" + counter);
@@ -94,8 +89,7 @@ public class DebsMain {
 
 	public static void runTask2() {
 		List<TaxiLog> taxiLogs = null;
-		CellHelper chelper = new CellHelper(FIRST_CELL_X, FIRST_CELL_Y, SHIFT_X,
-				SHIFT_Y, 300);
+		CellHelper chelper = new CellHelper(FIRST_CELL_X, FIRST_CELL_Y, SHIFT_X, SHIFT_Y, 300);
 
 		try (DataFileParser dataFileParser = new DataFileParser(DATA_FILE_URL, DELIMITER, columncount, chelper)) {
 
@@ -106,16 +100,14 @@ public class DebsMain {
 			// Adding global toplist to the session
 			kSession.setGlobal("mostProfitableAreas", mostProfitableAreas);
 
-
 			SessionPseudoClock clock = kSession.getSessionClock();
-			
 
 			taxiLogs = dataFileParser.parseNextLinesFromCSVGroupedByDropoffDate();
 			long currentTime = DataFileParser.getCURRENT_TIME();
 			long startingTime = DataFileParser.getCURRENT_TIME();
-			
+
 			clock.advanceTime(startingTime, TimeUnit.MILLISECONDS);
-			
+
 			long counter = taxiLogs.size();
 			while (currentTime - startingTime <= TEST_INTERVAL_IN_IN_MS) {
 				kSession.insert(new Tick(currentTime));
@@ -127,9 +119,9 @@ public class DebsMain {
 					}
 					taxiLogs = dataFileParser.parseNextLinesFromCSVGroupedByDropoffDate();
 				}
-				
+
 				kSession.fireAllRules();
-				
+
 				if ((currentTime - startingTime) % (1000 * 60 * 60) == 0) {
 					System.out.println(mostProfitableAreas);
 					System.out.println("current time:" + new Date(clock.getCurrentTime()) + " processed:" + counter);

@@ -215,7 +215,7 @@ public class Task2Test {
 		kSession.insert(new Tick(clock.getCurrentTime(), System.currentTimeMillis()));
 		kSession.fireAllRules();
 
-		System.out.println(toplist);
+		//System.out.println(toplist);
 
 		for (int i = 0; i < 15; i++) {
 			clock.advanceTime(1, TimeUnit.MINUTES);
