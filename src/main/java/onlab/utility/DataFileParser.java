@@ -24,7 +24,7 @@ public class DataFileParser implements AutoCloseable{
 	private static final Logger LOGGER = Logger.getLogger(DataFileParser.class.getName());
 
 	private static long START_TIME_IN_MILLISECONDS = 0;
-	public static SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+	public static SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	// private String fileName;
 	private String delimiter;
 	private int columncount;

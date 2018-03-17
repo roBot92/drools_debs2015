@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import onlab.positioning.Cell;
+import onlab.utility.DataFileParser;
 
 public class Route implements Comparable<Route> {
 
@@ -13,6 +14,8 @@ public class Route implements Comparable<Route> {
 	private Date lastDropoffTime;
 	private long delay = -1;
 	private long insertedForDelay;
+	
+	public static SimpleDateFormat df = DataFileParser.SIMPLE_DATE_FORMAT;
 
 	public Route(Cell pickup_Cell, Cell dropoff_Cell, Date lastDropoffTime, long frequency) {
 		this.pickup_cell = pickup_Cell;
@@ -140,9 +143,15 @@ public class Route implements Comparable<Route> {
 
 	@Override
 	public String toString() {
-		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		
 		return "Route - Pickup cell:" + pickup_cell + " Dropoff cell:" + dropoff_cell + " - Frequency:" + frequency
 				+ " - Last Dropoff Time: " + df.format(lastDropoffTime) + " Delay: " + delay +" ms";
+	}
+	
+	public String toStringWithoutDelay() {
+		
+		return "Route - Pickup cell:" + pickup_cell + " Dropoff cell:" + dropoff_cell + " - Frequency:" + frequency
+				+ " - Last Dropoff Time: " + df.format(lastDropoffTime);
 	}
 	
 	public void increaseFrequency() {

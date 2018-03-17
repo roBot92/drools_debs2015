@@ -194,9 +194,15 @@ public class Task1Test {
 		clock.advanceTime(28, TimeUnit.MINUTES);
 		kSession.insert(new Tick(clock.getCurrentTime()));
 		kSession.fireAllRules();
+		assertTrue("check4", toplist.size() == 3 && toplist.get(0).valueEquals(route1)
+				&& toplist.get(1).valueEquals(route2) && toplist.get(2).valueEquals(route3));
+		
+		clock.advanceTime(1, TimeUnit.SECONDS);
+		kSession.insert(new Tick(clock.getCurrentTime()));
+		kSession.fireAllRules();
 		route1.setFrequency(2);
 		route2.setFrequency(1);
-		assertTrue("check4",
+		assertTrue("check5",
 				toplist.size() == 2 && toplist.get(0).valueEquals(route1) && toplist.get(1).valueEquals(route2));
 
 		clock.advanceTime(1, TimeUnit.MINUTES);
@@ -204,12 +210,12 @@ public class Task1Test {
 		kSession.fireAllRules();
 		route1.setFrequency(1);
 
-		assertTrue("check5", toplist.size() == 1 && toplist.get(0).valueEquals(route1));
+		assertTrue("check6", toplist.size() == 1 && toplist.get(0).valueEquals(route1));
 
 		clock.advanceTime(1, TimeUnit.MINUTES);
 		kSession.insert(new Tick(clock.getCurrentTime()));
 		kSession.fireAllRules();
-		assertTrue("check6", toplist.size() == 0);
+		assertTrue("check7", toplist.size() == 0);
 
 	}
 

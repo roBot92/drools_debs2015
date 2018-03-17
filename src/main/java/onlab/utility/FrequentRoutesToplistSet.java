@@ -11,7 +11,11 @@ import org.apache.commons.collections.keyvalue.MultiKey;
 import onlab.event.Route;
 import onlab.positioning.Cell;
 
-public class FrequentRoutesToplistSet/* <T extends Route> extends TreeSet<Route> implements SortedSet<Route> */ {
+public class FrequentRoutesToplistSet/*
+										 * <T extends Route> extends
+										 * TreeSet<Route> implements
+										 * SortedSet<Route>
+										 */ {
 
 	private static int MAX_ELEMENT_NUMBER = 10;
 	private TreeSet<Route> toplist = new TreeSet<Route>();
@@ -19,31 +23,46 @@ public class FrequentRoutesToplistSet/* <T extends Route> extends TreeSet<Route>
 
 	public boolean add(Route newRoute) {
 
-		if(newRoute == null) {
+		if (newRoute == null) {
 			return false;
 		}
-		
-		MultiKey key = new MultiKey(newRoute.getPickup_cell(), newRoute.getDropoff_cell());		
-		Route oldRoute = routeMap.put(key, newRoute);
-		
-		if( oldRoute != null){
-			toplist.remove(oldRoute);
-		}
-		
-		if(newRoute.getFrequency() > 0 && newRoute.getLastDropoffTime() != null){
+
+		// MultiKey key = new MultiKey(newRoute.getPickup_cell(),
+		// newRoute.getDropoff_cell());
+		// Route oldRoute = routeMap.put(key, newRoute);
+
+		// TODO ez lehet, hogy kell, de nem biztos
+		/*
+		 * if( oldRoute != null){ toplist.remove(oldRoute); }
+		 */
+
+		if (newRoute.getFrequency() > 0 && newRoute.getLastDropoffTime() != null) {
 			toplist.add(newRoute);
+		}
+
+		if (newRoute.getDelay() == -1) {
+			newRoute.setDelay(System.currentTimeMillis() - newRoute.getInsertedForDelay());
 		}
 		return true;
 	}
 
 	@Override
 	public String toString() {
+		return printToString(false);
+	}
+
+	public String toStringWithoutDelay() {
+		return printToString(true);
+	}
+
+	private String printToString(boolean withoutDelay) {
 		StringBuilder builder = new StringBuilder();
 		int counter = 1;
 
 		Iterator<Route> iterator = toplist.iterator();
 		while (iterator.hasNext() && counter < 11) {
-			builder.append((counter++) + iterator.next().toString() + "\n");
+			builder.append((counter++)
+					+ (withoutDelay ? iterator.next().toStringWithoutDelay() : iterator.next().toString()) + "\n");
 		}
 
 		while (counter < MAX_ELEMENT_NUMBER + 1) {
@@ -51,7 +70,6 @@ public class FrequentRoutesToplistSet/* <T extends Route> extends TreeSet<Route>
 		}
 
 		return builder.toString();
-
 	}
 
 	public Route get(int index) {
@@ -76,7 +94,7 @@ public class FrequentRoutesToplistSet/* <T extends Route> extends TreeSet<Route>
 	}
 
 	public boolean contains(Route route) {
-		if(route == null) {
+		if (route == null) {
 			return false;
 		}
 		for (int i = 0; i < MAX_ELEMENT_NUMBER; i++) {
@@ -84,7 +102,7 @@ public class FrequentRoutesToplistSet/* <T extends Route> extends TreeSet<Route>
 			if (tRoute == null) {
 				return false;
 			}
-			if(tRoute.equals(route)) {
+			if (tRoute.equals(route)) {
 				return true;
 			}
 
@@ -101,12 +119,15 @@ public class FrequentRoutesToplistSet/* <T extends Route> extends TreeSet<Route>
 
 		return removable;
 	}
-	
-	public Route remove(Route route) {
-		if(route == null) {
-			return null;
-		}
-		return remove(route.getPickup_cell(), route.getDropoff_cell());
+
+	public boolean remove(Route route) {
+		// TODO lehet, hogy kell még
+		/*
+		 * if(route == null) { return null; } return
+		 * remove(route.getPickup_cell(), route.getDropoff_cell());
+		 */
+
+		return toplist.remove(route);
 	}
 
 	// for Esper implementation
@@ -160,9 +181,48 @@ public class FrequentRoutesToplistSet/* <T extends Route> extends TreeSet<Route>
 	public long getSetSize() {
 		return toplist.size();
 	}
+
 	/*
-	 * private Route getByCells(Cell pickupCell, Cell dropoffCell) { for(Route route
-	 * : this) { if(route.getPickup_cell() == pickupCell && route.getDropoff_cell()
-	 * == dropoffCell) { return route; } } return null; }
+	 * private Route getByCells(Cell pickupCell, Cell dropoffCell) { for(Route
+	 * route : this) { if(route.getPickup_cell() == pickupCell &&
+	 * route.getDropoff_cell() == dropoffCell) { return route; } } return null;
+	 * }
 	 */
+	public long getAverageDelay() {
+		long sum = 0;
+		int counter = 0;
+		for (Route r : toplist) {
+			long delay = r.getDelay();
+			if (delay > -1) {
+				sum += r.getDelay();
+				counter++;
+			}
+		}
+
+		return sum / counter;
+	}
+
+	public long getMaxDelay() {
+		long max = 0;
+		for (Route r : toplist) {
+			long delay = r.getDelay();
+			if (delay > max) {
+				max = delay;
+			}
+		}
+
+		return max;
+	}
+
+	public long getMinDelay() {
+		long min = Long.MAX_VALUE;
+		for (Route r : toplist) {
+			long delay = r.getDelay();
+			if (delay > -1 && delay < min) {
+				min = delay;
+			}
+		}
+
+		return min;
+	}
 }
