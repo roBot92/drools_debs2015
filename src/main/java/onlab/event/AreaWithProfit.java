@@ -2,8 +2,10 @@ package onlab.event;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import onlab.positioning.Cell;
+import onlab.utility.DataFileParser;
 
 public class AreaWithProfit implements Comparable<AreaWithProfit> {
 
@@ -16,7 +18,8 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 	// Drools-hoz nem kell jelenleg
 	private BigDecimal medianProfit;
 	private long countOfTaxes = 0;
-
+	
+	private static final SimpleDateFormat df = DataFileParser.SIMPLE_DATE_FORMAT;
 	public AreaWithProfit(Cell cell, BigDecimal medianProfitIndex, Date lastInserted) {
 		this.cell = cell;
 		this.medianProfitIndex = medianProfitIndex;
@@ -139,8 +142,16 @@ public class AreaWithProfit implements Comparable<AreaWithProfit> {
 		if(medianProfitIndex.scale() != 2) {
 			medianProfitIndex.setScale(2, RoundingMode.HALF_UP);
 		};
-		return "Cell: " + this.cell + " - Median profit index: " + this.medianProfitIndex + " - Dropoff time: " + lastInserted
-				+ "Delay: " + delay + " ms median:" + medianProfit + " countOfTaxi:" + countOfTaxes;
+		return "Cell: " + this.cell + " - Median profit index: " + this.medianProfitIndex + " - Dropoff time: " + df.format(lastInserted)
+				+ "Delay: " + delay + " ms";
+	}
+	
+	
+	public String toStringWithoutDelay(){
+		if(medianProfitIndex.scale() != 2) {
+			medianProfitIndex.setScale(2, RoundingMode.HALF_UP);
+		};
+		return "Cell: " + this.cell + " - Median profit index: " + this.medianProfitIndex + " - Dropoff time: " + df.format(lastInserted);
 	}
 
 	public long getDelay() {

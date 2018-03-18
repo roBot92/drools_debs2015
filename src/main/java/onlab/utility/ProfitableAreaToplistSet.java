@@ -19,18 +19,16 @@ public class ProfitableAreaToplistSet {
 
 	public boolean add(AreaWithProfit newArea) {
 
-		if(newArea == null){
+		if (newArea == null) {
 			return false;
 		}
-		AreaWithProfit containedArea = areaMap.get(newArea.getCell());
-
-		if (containedArea != null) {
-			toplist.remove(containedArea);
-		}
-
 		areaMap.put(newArea.getCell(), newArea);
-		
-		if(newArea.getMedianProfitIndex().compareTo(BigDecimal.ZERO) > 0){
+
+		/*
+		 * if (containedArea != null) { toplist.remove(containedArea); }
+		 */
+
+		if (newArea.getMedianProfitIndex().compareTo(BigDecimal.ZERO) > 0) {
 			toplist.add(newArea);
 		}
 		return true;
@@ -38,12 +36,21 @@ public class ProfitableAreaToplistSet {
 
 	@Override
 	public String toString() {
+		return printToString(false);
+	}
+
+	public String toStringWithoutDelay() {
+		return printToString(true);
+	}
+
+	public String printToString(boolean withoutDelay) {
 		StringBuilder builder = new StringBuilder();
 		int counter = 1;
 
 		Iterator<AreaWithProfit> iterator = toplist.iterator();
 		while (iterator.hasNext() && counter < MAX_ELEMENT_NUMBER + 1) {
-			builder.append((counter++) + iterator.next().toString() + "\n");
+			builder.append((counter++)
+					+ (withoutDelay ? iterator.next().toStringWithoutDelay() : iterator.next().toString()) + "\n");
 		}
 
 		while (counter < MAX_ELEMENT_NUMBER + 1) {
@@ -65,21 +72,13 @@ public class ProfitableAreaToplistSet {
 
 	}
 
-	public long getAverageDelay() {
-		long sumDelay = 0;
-		for (AreaWithProfit area : toplist) {
-			sumDelay += area.getDelay();
-		}
-
-		return toplist.size() == 0 ? 0 : sumDelay / toplist.size();
-	}
 
 	public long size() {
 		return toplist.size() < MAX_ELEMENT_NUMBER ? toplist.size() : MAX_ELEMENT_NUMBER;
 	}
 
 	public void remove(AreaWithProfit removableArea) {
-		if(removableArea != null) {
+		if (removableArea != null) {
 			removeByCell(removableArea.getCell());
 		}
 	}
@@ -105,9 +104,9 @@ public class ProfitableAreaToplistSet {
 		if (area == null) {
 			area = new AreaWithProfit(cell, lastInserted);
 			areaMap.put(cell, area);
-		} else if(lastInserted != null){
-			if(area.getLastInserted() == null || lastInserted.after(area.getLastInserted()))
-			area.setLastInserted(lastInserted);
+		} else if (lastInserted != null) {
+			if (area.getLastInserted() == null || lastInserted.after(area.getLastInserted()))
+				area.setLastInserted(lastInserted);
 		}
 
 		area.setCountOfTaxes(count);
@@ -127,12 +126,12 @@ public class ProfitableAreaToplistSet {
 			areaMap.put(cell, area);
 		} else {
 			if (lastInserted != null) {
-				if(area.getLastInserted() == null) {
+				if (area.getLastInserted() == null) {
 					area.setLastInserted(lastInserted);
-				} else if(lastInserted.after(area.getLastInserted())){
+				} else if (lastInserted.after(area.getLastInserted())) {
 					area.setLastInserted(lastInserted);
 				}
-				
+
 			}
 
 		}
@@ -141,43 +140,80 @@ public class ProfitableAreaToplistSet {
 		if (BigDecimal.ZERO.compareTo(area.getMedianProfitIndex()) == -1) {
 			toplist.add(area);
 		}
-		
+
 	}
-	
+
 	public void increaseAreaTaxiCount(Cell cell, Date lastInserted) {
 		AreaWithProfit area = removeByCell(cell);
-		if(area == null) {
+		if (area == null) {
 			area = new AreaWithProfit(cell, lastInserted);
 			areaMap.put(cell, area);
 		}
-		
-		else if(lastInserted != null) {
+
+		else if (lastInserted != null) {
 			area.setLastInserted(lastInserted);
 		}
 		area.increaseCountOfTaxes();
-		
+
 		if (BigDecimal.ZERO.compareTo(area.getMedianProfitIndex()) == -1) {
 			toplist.add(area);
 		}
 	}
-	
+
 	public void decreaseAreaTaxiCount(Cell cell, Date lastInserted) {
 		AreaWithProfit area = removeByCell(cell);
-		if(area == null && cell != null) {
+		if (area == null && cell != null) {
 			area = new AreaWithProfit(cell, lastInserted);
 			areaMap.put(cell, area);
-		}
-		else if(lastInserted != null) {
+		} else if (lastInserted != null) {
 			area.setLastInserted(lastInserted);
 		}
 		area.decreaseCountOfTaxes();
 		if (BigDecimal.ZERO.compareTo(area.getMedianProfitIndex()) == -1) {
 			toplist.add(area);
 		}
-		
+
 	}
-	
+
 	public AreaWithProfit getAreaByCell(Cell cell) {
 		return areaMap.get(cell);
+	}
+	
+	public long getAverageDelay() {
+		long sum = 0;
+		int counter = 0;
+		for (AreaWithProfit r : toplist) {
+			long delay = r.getDelay();
+			if (delay > -1) {
+				sum += r.getDelay();
+				counter++;
+			}
+		}
+
+		return sum / counter;
+	}
+
+	public long getMaxDelay() {
+		long max = 0;
+		for (AreaWithProfit r : toplist) {
+			long delay = r.getDelay();
+			if (delay > max) {
+				max = delay;
+			}
+		}
+
+		return max;
+	}
+
+	public long getMinDelay() {
+		long min = Long.MAX_VALUE;
+		for (AreaWithProfit r : toplist) {
+			long delay = r.getDelay();
+			if (delay > -1 && delay < min) {
+				min = delay;
+			}
+		}
+
+		return min;
 	}
 }

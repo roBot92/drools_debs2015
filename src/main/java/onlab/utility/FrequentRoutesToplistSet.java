@@ -11,11 +11,7 @@ import org.apache.commons.collections.keyvalue.MultiKey;
 import onlab.event.Route;
 import onlab.positioning.Cell;
 
-public class FrequentRoutesToplistSet/*
-										 * <T extends Route> extends
-										 * TreeSet<Route> implements
-										 * SortedSet<Route>
-										 */ {
+public class FrequentRoutesToplistSet {
 
 	private static int MAX_ELEMENT_NUMBER = 10;
 	private TreeSet<Route> toplist = new TreeSet<Route>();

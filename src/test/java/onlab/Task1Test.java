@@ -25,7 +25,6 @@ import onlab.event.TaxiLog;
 import onlab.event.Tick;
 import onlab.utility.FrequentRoutesToplistSet;
 
-
 public class Task1Test {
 
 	private FrequentRoutesToplistSet toplist;
@@ -107,7 +106,7 @@ public class Task1Test {
 
 	@Test
 	public void test_insertOneTaxiLog() {
-		
+
 		TaxiLog tlog1 = route1tlogs.get(0);
 		Route route = new Route(tlog1.getPickup_cell(), tlog1.getDropoff_cell(), tlog1.getDropoff_datetime(), 1);
 
@@ -137,13 +136,13 @@ public class Task1Test {
 		kSession.insert(tlog3);
 		kSession.fireAllRules();
 		check = toplist.size() == 2 && route2.equals(toplist.get(1)) && route3.equals(toplist.get(0));
-		assertTrue("check1", check);
+		assertTrue("check2", check);
 
-		//kSession.insert(tlog1);
+		// kSession.insert(tlog1);
 	}
 
 	@Test
-	public void testAgeing() {
+	public void test_Ageing() {
 
 		// First minute +1 route1, +1 route2, +1 route3
 		kSession.insert(route1tlogs.get(0));
@@ -159,18 +158,17 @@ public class Task1Test {
 				route3tlogs.get(0).getDropoff_datetime(), 1);
 		assertTrue("check1", toplist.size() == 3 && toplist.get(0).valueEquals(route3)
 				&& toplist.get(1).valueEquals(route2) && toplist.get(2).valueEquals(route1));
-		
-		
+
 		// Second minute, +1 route1, +1 route2
 		clock.advanceTime(60, TimeUnit.SECONDS);
 		kSession.insert(new Tick(clock.getCurrentTime()));
-		
+
 		route1tlogs.get(1).setDropoff_datetime(new Date(clock.getCurrentTime()));
 		kSession.insert(route1tlogs.get(1));
 		route2tlogs.get(1).setDropoff_datetime(new Date(clock.getCurrentTime()));
 		kSession.insert(route2tlogs.get(1));
 		kSession.fireAllRules();
-		
+
 		route1.setFrequency(2);
 		route1.setLastDropoffTime(new Date(clock.getCurrentTime()));
 		route2.setFrequency(2);
@@ -190,13 +188,13 @@ public class Task1Test {
 		kSession.insert(route1tlogs.get(2));
 		assertTrue("check3", toplist.size() == 3 && toplist.get(0).valueEquals(route1)
 				&& toplist.get(1).valueEquals(route2) && toplist.get(2).valueEquals(route3));
-		
+
 		clock.advanceTime(28, TimeUnit.MINUTES);
 		kSession.insert(new Tick(clock.getCurrentTime()));
 		kSession.fireAllRules();
 		assertTrue("check4", toplist.size() == 3 && toplist.get(0).valueEquals(route1)
 				&& toplist.get(1).valueEquals(route2) && toplist.get(2).valueEquals(route3));
-		
+
 		clock.advanceTime(1, TimeUnit.SECONDS);
 		kSession.insert(new Tick(clock.getCurrentTime()));
 		kSession.fireAllRules();
@@ -258,16 +256,80 @@ public class Task1Test {
 		kSession.insert(tlogs.get(20));
 		kSession.fireAllRules();
 
-		
 		Route route = new Route(cells.get(2), cells.get(5), tlogs.get(20).getDropoff_datetime(), -1);
 
 		assertTrue("check2", toplist.size() == 10 && kSession.getQueryResults("taxis").size() == 21
 				&& kSession.getQueryResults("routes").size() == 11 && !toplist.contains(route));
-		clock.advanceTime(15*60+1, TimeUnit.SECONDS);
+		clock.advanceTime(15 * 60 + 1, TimeUnit.SECONDS);
 		kSession.insert(new Tick(clock.getCurrentTime()));
 		kSession.fireAllRules();
 		assertTrue("check3", toplist.size() == 1 && kSession.getQueryResults("taxis").size() == 1
 				&& kSession.getQueryResults("routes").size() == 1 && toplist.contains(route));
+	}
+
+	@Test
+	public void test_inserttionAndDeletionAtTheSameTimeWithoutOverlap() {
+		List<TaxiLog> tlogs = Arrays.asList(setUpTaxilog(cells.get(0), cells.get(1)),
+				setUpTaxilog(cells.get(0), cells.get(1)), setUpTaxilog(cells.get(0), cells.get(1)));
+		Route route = new Route(tlogs.get(0).getPickup_cell(), tlogs.get(0).getDropoff_cell(), tlogs.get(0).getDropoff_datetime(), 2);
+		kSession.insert(tlogs.get(0));
+		kSession.insert(tlogs.get(1));
+		kSession.insert(new Tick(clock.getCurrentTime()));
+		kSession.fireAllRules();
+		assertTrue("check1", toplist.size() == 1 && toplist.get(0).valueEquals(route));
+		
+		clock.advanceTime(30, TimeUnit.MINUTES);
+		
+		kSession.insert(new Tick(clock.getCurrentTime()));
+		assertTrue("check2", toplist.size() == 1 && toplist.get(0).valueEquals(route));
+		
+		clock.advanceTime(1, TimeUnit.SECONDS);
+		tlogs.get(2).setDropoff_datetime(new Date(clock.getCurrentTime()));
+		kSession.insert(tlogs.get(2));
+		kSession.insert(new Tick(clock.getCurrentTime()));
+		kSession.fireAllRules();
+		
+		route.setFrequency(1);
+		route.setLastDropoffTime(tlogs.get(2).getDropoff_datetime());
+		assertTrue("check3", toplist.size() == 1 && toplist.get(0).valueEquals(route));		
+		
+	}
+	
+	@Test
+	public void test_inserttionAndDeletionAtTheSameTimeWithOverlap() {
+		List<TaxiLog> tlogs = Arrays.asList(setUpTaxilog(cells.get(0), cells.get(1)),
+				setUpTaxilog(cells.get(0), cells.get(1)), setUpTaxilog(cells.get(0), cells.get(1)));
+		Route route = new Route(tlogs.get(0).getPickup_cell(), tlogs.get(0).getDropoff_cell(), tlogs.get(0).getDropoff_datetime(), 1);
+		kSession.insert(tlogs.get(0));
+		
+		kSession.insert(new Tick(clock.getCurrentTime()));
+		kSession.fireAllRules();
+		assertTrue("check1", toplist.size() == 1 && toplist.get(0).valueEquals(route));
+		
+		clock.advanceTime(1, TimeUnit.SECONDS);
+		tlogs.get(1).setDropoff_datetime(new Date(clock.getCurrentTime()));
+		route.setFrequency(2);
+		route.setLastDropoffTime(new Date(clock.getCurrentTime()));
+		kSession.insert(tlogs.get(1));
+		kSession.insert(new Tick(clock.getCurrentTime()));
+		kSession.fireAllRules();
+		assertTrue("check2", toplist.size() == 1 && toplist.get(0).valueEquals(route));
+		
+		clock.advanceTime(30, TimeUnit.MINUTES);
+		kSession.insert(new Tick(clock.getCurrentTime()));
+		tlogs.get(2).setDropoff_datetime(new Date(clock.getCurrentTime()));
+		kSession.insert(tlogs.get(2));
+		kSession.fireAllRules();
+		
+		route.setLastDropoffTime(new Date(clock.getCurrentTime()));
+		assertTrue("check3", toplist.size() == 1 && toplist.get(0).valueEquals(route));
+		
+		clock.advanceTime(1, TimeUnit.SECONDS);
+		kSession.insert(new Tick(clock.getCurrentTime()));
+		kSession.fireAllRules();
+		route.setFrequency(1);
+		assertTrue("check3", toplist.size() == 1 && toplist.get(0).valueEquals(route));
+		
 	}
 
 	private Date getZeroTimeCalendar() {

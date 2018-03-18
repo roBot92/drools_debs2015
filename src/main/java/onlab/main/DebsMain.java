@@ -18,7 +18,6 @@ import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.KieSessionConfiguration;
 import org.kie.api.runtime.conf.ClockTypeOption;
 
-import onlab.event.Route;
 import onlab.event.TaxiLog;
 import onlab.event.Tick;
 import onlab.positioning.*;
@@ -41,8 +40,8 @@ public class DebsMain {
 
 	public static void main(String[] args) throws FileNotFoundException, ParseException {
 
-		runTask1(true);
-		// runTask2();
+		//runTask1(false);
+		runTask2();
 	}
 
 	public static void runTask1(final boolean measuringMode) {

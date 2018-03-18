@@ -215,13 +215,13 @@ public class Task2Test {
 		kSession.insert(new Tick(clock.getCurrentTime(), System.currentTimeMillis()));
 		kSession.fireAllRules();
 
-		//System.out.println(toplist);
+		////System.out.println(toplist);
 
 		for (int i = 0; i < 15; i++) {
 			clock.advanceTime(1, TimeUnit.MINUTES);
 			kSession.insert(new Tick(clock.getCurrentTime(), System.currentTimeMillis()));
 			kSession.fireAllRules();
-			System.out.println(toplist);
+			////System.out.println(toplist);
 		}
 
 		/*
@@ -234,7 +234,7 @@ public class Task2Test {
 		 * kSession.insert(new Tick(clock.getCurrentTime())); kSession.insert(tlog);
 		 * kSession.fireAllRules();
 		 * 
-		 * System.out.println(toplist);
+		 * //System.out.println(toplist);
 		 */
 
 		/*
@@ -242,7 +242,7 @@ public class Task2Test {
 		 * 
 		 * kSession.insert(new Tick(clock.getCurrentTime())); kSession.fireAllRules();
 		 * QueryResults qres = kSession.getQueryResults( "areas" );
-		 * System.out.println(toplist);
+		 * //System.out.println(toplist);
 		 */
 
 	}

@@ -1,7 +1,7 @@
 package onlab.event
 
 
-/*
+
 
 //list any import classes here.
 //import accumulate MedianAccumulateFunction medianf
@@ -60,7 +60,7 @@ declare AreaWithProfit
 @timestamp(lastInserted)
 end
 
-
+//Kidobjuk az érvénytelen TaxiLog-okat: hiányzik valamelyik cella, vagy viteldíj <=0 USD.
 rule task2_removeInvalidTaxiLog
 salience 1
 	when
@@ -70,6 +70,9 @@ salience 1
 		retract($tlog);
 end
 
+
+//A még fel nem dolgozott TaxiLog-okra aktiválódik. Aktiválja a két AreaWithProfit-ot a WM-ben a két cellának megfelelõen, illetve 
+//meghívja rájuk a kezdõ cellára a medián frissítést, és a befejezõre a szám frissítést.
 rule "task2_new_TaxiLog_rule" 
 salience 0
     when
@@ -87,6 +90,7 @@ salience 0
 end
 
 
+//Létrehozza az új AreaWithProfit-ot a WM-ben, ha még nem létezik.
 rule "task2_activateArea_rule"
 salience 1
 	when 
@@ -97,50 +101,45 @@ salience 1
 		insert(new AreaWithProfit($pickupCell, $currentTime));
 end
 
+//Kiszámolja a mediánt az adott AreaWithProfit-ra.
 rule "task2_refreshAreaMedian_rule"
 salience -1
 	when
 		$tick:Tick(  )
 		RefreshAreaMedian($cell:cell)
 		$area:AreaWithProfit(cell == $cell)
+		//Legyûjtjük az összes RefreshAreaMedian objektumot, hogy csak egyszer fusson.
 		$refList: ArrayList() from collect (RefreshAreaMedian($cell == cell))
+		//Használjuk a létrehozott medián akkumuláló függvényt az összes, elmúlt negyed órában befejezett TaxiLog-ra a területen.
 		$medianOfCell: BigDecimal() from accumulate 
 				(TaxiLog(pickup_cell == $cell, $fare:fare_amount, $tip:tip_amount,this before[0m,15m] $tick), 
 					median($fare.add($tip)))					
 	then
 		
-		
-		//Ez itt úgy tûnik, hogy holtág, nem fut a medián, ha nem kap taxilogot, így ZERO medián sem lehet. Vagy mégsem.
-		if($medianOfCell.compareTo(BigDecimal.ZERO) == 0){
-			////System.out.println("what??????");
-			mostProfitableAreas.remove($area);
-			$area.setMedianProfit($medianOfCell);
-			update($area);
-			for(Object $o : $refList){
-				retract($o);
+		//Elõször kitöröljük a toplistából, hogy a rendezés koherens maradjon.
+		mostProfitableAreas.remove($area);
+		long $ctime = -1;
+		//Kitöröljük a legyûjtött egyforma RefreshAreaMedian eseményeket. Ha találunk olyat, ahol van insertTime (tehát új TaxiLog aktiválta)
+		//ott elmentjük az insertTime-ot. Helyes mûködés esetén ebbõl egyféle lehet, a jelenlegi idõ.
+		for(Object $o : $refList){
+			RefreshAreaMedian $ram = (RefreshAreaMedian) $o;
+			if($ram.getInsertTime() > -1){
+				$ctime = $ram.getInsertTime();
 			}
-		} else{
-			//System.out.println("task2_RefreshAreaMedian" + $medianOfCell);
-			mostProfitableAreas.remove($area);
-			long $ctime = -1;
-			for(Object $o : $refList){
-				RefreshAreaMedian $ram = (RefreshAreaMedian) $o;
-				if($ram.getInsertTime() > -1){
-					$ctime = $ram.getInsertTime();
-				}
-				retract($o);
-			}
-			if($ctime != -1){
-				$area.setLastInserted(new Date($ctime));
-			}
+			retract($o);
+		}
+		//Ha találtunk currentTime-ot, beállítjuk.
+		if($ctime != -1){
+			$area.setLastInserted(new Date($ctime));
+		}
+		//Beállítjuk az új mediánt.
+		$area.setMedianProfit($medianOfCell);
+		update($area);
+		mostProfitableAreas.add($area);
 			
-			$area.setMedianProfit($medianOfCell);
-			update($area);
-			mostProfitableAreas.add($area);
-		}	
 end
 
-//Ez azért kell, mert a másik refresh nem fut le, ha nincs már TaxiLog a területhez 15 percen belül. A prioritása szigorúan kisebb, mint a refreshAreaMedian rule-nak.
+/*
 rule "task2_RefreshAreaMedianToNull"
 salience -2
 	when
@@ -149,34 +148,35 @@ salience -2
 		$area:AreaWithProfit(cell == $cell)
 		$refList: ArrayList() from collect (RefreshAreaMedian($cell == cell))
 	then
-		//System.out.println("task2_RefreshAreaMedianToNull");
+		System.out.println("task2_RefreshAreaMedianToNull");
 		mostProfitableAreas.remove($area);
 		$area.setMedianProfit(BigDecimal.ZERO);
 		for(Object $o : $refList){
 			retract($o);
 		}
-end
+end*/
 
-
+//Megnöveli az adott AreaWithProfit-nak a count-ját, vagyis a rajta potenciálisan tartózkodó taxik számát.
 rule "task2_increaseAreaCount_rule"
 salience -1
 	when
 		$ref:RefreshAreaCount($cell:cell, $time:insertTime, $license:license)
 		$area:AreaWithProfit( $cell==cell )
 	then 
+		//Elõször kitörli az area-t a toplistából, hogy a rendezés konzisztens maradjon.
 		mostProfitableAreas.remove($area);
+		//Megnöveli a count-o, és beállítja az insertTime-ot (a jelenlegi idõt)
 		$area.increaseCountOfTaxes();
-		if($time > -1){
-			$area.setLastInserted(new Date($time));
-		}
-		
+		$area.setLastInserted(new Date($time));		
 		update($area);
 		mostProfitableAreas.add($area);
+		
+		//Végül beilleszt egy TaxiLocation fact-ot, majd kitörli a RefreshAreaCount-ot.
 		insert(new TaxiLocation($cell, $license, new Date($time)));    	 
 		retract($ref);
 end
 
-
+//Akkor aktiválódik, ha két TaxiLocation-t talál ugyanarra a sofõrre, illetve a régebbi lokációhoz talál AreaWithProfit-ot is.
 rule "task2_decreaseTaxiCountOnDriversPreviousCell"
 salience -2
 	when
@@ -184,22 +184,25 @@ salience -2
 		$oldTlocation: TaxiLocation(license.equals($license), $cell:cell, this before $newTlocation)
 		$area:AreaWithProfit( cell == $cell )
 	then
-	//	//System.out.println("task2_decreaseTaxiCountOnDriversPreviousCell");
+		//A régebbi TaxiLocation-höz tartozó AreaWithProfit-ot kitörli a toplistából, lecsökkenti a rajta tartózkodó potenciális
+		//taxik számát (count), majd visszateszi a toplistába, végül kitörli a régebbit.
 		mostProfitableAreas.remove($area);
 		$area.decreaseCountOfTaxes();
+		$area.setLastInserted($newTlocation.getCurrentTime());
 		update($area);
 		mostProfitableAreas.add($area);
 		retract($oldTlocation);
 end
 
+//A 30 percnél régebbi TaxiLocation-ökre aktiválódik.
 rule "task2_expiringTaxiLocationRule"
 salience 1
 	when
 		$tick:Tick()
-		$tlocation:TaxiLocation($cell:cell, this before[30m,*] $tick)
+		$tlocation:TaxiLocation($cell:cell, this before[30m1s,*] $tick)
 		$area:AreaWithProfit( cell == $cell )
 	then
-	//	//System.out.println("expiringTaxiLocation");
+	//Lecsökkenti TaxiLocation-höz tartozó AreaWithProfit-on potenciálisan tartózkodó taxik számát, majd kitörli a lokációt.
 		mostProfitableAreas.remove($area);
 		$area.decreaseCountOfTaxes();
 		update($area);
@@ -207,20 +210,22 @@ salience 1
 		
 		retract($tlocation);
 end
-	
+
+//Minden TaxiLog-ra aktiválódik egyszer, ami már 15 percnél régebbi.	
 rule "task2_refreshMedianAfter15Min"
 salience 1
 	when
 		$tick:Tick()
-		$tlog:TaxiLog(!olderThanAQuarter, this before[901s,*] $tick)	
+		$tlog:TaxiLog(!olderThanAQuarter, this before[15m1s,*] $tick)	
 	then
-		
+		//Beilleszt egy új RefreshAreaMedian tényt a WM-be, hogy frissüljön a pickupCell-hez tartozó medián.
 		$tlog.setOlderThanAQuarter(true);
 		update($tlog);	
 		insert(new RefreshAreaMedian($tlog.getPickup_cell(), -1));
 end
 
-rule "taxsk2_deactivateArea"
+//Kitörli azokat az AreaWithProfit-okat, amiknek már mindene 0, és régebbiek, mint fél óra. 
+rule "task2_deactivateArea"
 salience -5
 	when
 		$tick:Tick(  )
@@ -248,4 +253,4 @@ end
 
 query "taxis"()
 	taxis: TaxiLog()
-end*/
+end
