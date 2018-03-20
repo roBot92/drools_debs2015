@@ -23,13 +23,12 @@ global onlab.utility.FrequentRoutesToplistSet mostFrequentRoutes
 declare TaxiLog
 @role(event)
 @timestamp(dropoff_datetime)
-@expires(31m)
 end
 
 declare Tick
 @role(event)
 @timestamp(currentTime)
-@expires( 1s )
+@expires( 999ms )
 end
 
 
@@ -39,7 +38,6 @@ end
 
 declare RefreshRoute
 @role(fact)
-//@expires(1s)
 end
 
 declare Route

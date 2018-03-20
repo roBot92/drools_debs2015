@@ -24,6 +24,7 @@ import onlab.positioning.*;
 import onlab.utility.DataFileParser;
 import onlab.utility.FrequentRoutesToplistSet;
 import onlab.utility.ProfitableAreaToplistSet;
+import onlab.utility.ToplistSetInterface;
 
 public class DebsMain {
 
@@ -40,13 +41,31 @@ public class DebsMain {
 
 	public static void main(String[] args) throws FileNotFoundException, ParseException {
 
+		
 		//runTask1(false);
-		runTask2();
+	runTask2(false);
 	}
 
-	public static void runTask1(final boolean measuringMode) {
+	public static void runTask1(boolean measuringMode) {
+		runTask(new FrequentRoutesToplistSet(),"mostFrequentRoutes", measuringMode,1);
+	}
+
+	public static void runTask2(boolean measuringMode) {
+		runTask(new ProfitableAreaToplistSet(),"mostProfitableAreas", measuringMode,2);
+	}
+
+	public static KieSession initializeSession() {
+		KieServices ks = KieServices.Factory.get();
+		KieContainer kContainer = ks.getKieClasspathContainer();
+		KieSessionConfiguration config = ks.newKieSessionConfiguration();
+		config.setOption(ClockTypeOption.get("pseudo"));
+		return kContainer.newKieSession("ksession-rules", config);
+	}
+	
+	public static void runTask(ToplistSetInterface toplist, String globalToplistVariableName, boolean measuringMode, int divisor){
+
 		List<TaxiLog> taxiLogs = null;
-		CellHelper chelper = new CellHelper(FIRST_CELL_X, FIRST_CELL_Y, SHIFT_X, SHIFT_Y, 300);
+		CellHelper chelper = new CellHelper(FIRST_CELL_X, FIRST_CELL_Y, SHIFT_X.divide(BigDecimal.valueOf(divisor)), SHIFT_Y.divide(BigDecimal.valueOf(divisor)), 300*divisor);
 		Runtime runtime = Runtime.getRuntime();
 		File measuringResults = null;
 		BufferedWriter measuringResultsWriter = null;
@@ -80,12 +99,11 @@ public class DebsMain {
 
 		try (DataFileParser dataFileParser = new DataFileParser(DATA_FILE_URL, DELIMITER, columncount, chelper)) {
 
-			FrequentRoutesToplistSet mostFrequentRoutes = new FrequentRoutesToplistSet();
 
 			KieSession kSession = initializeSession();
 
 			// Adding global toplist to the session
-			kSession.setGlobal("mostFrequentRoutes", mostFrequentRoutes);
+			kSession.setGlobal(globalToplistVariableName, toplist);
 
 			SessionPseudoClock clock = kSession.getSessionClock();
 
@@ -111,11 +129,11 @@ public class DebsMain {
 				}
 
 				kSession.fireAllRules();
-				String toplistStringWithoutDelay = mostFrequentRoutes.toStringWithoutDelay();
+				String toplistStringWithoutDelay = toplist.toStringWithoutDelay();
 				// Mindig kiírjuk, ha volt változás
 				if (!toplistStringWithoutDelay.equals(previousToplistWithoutDelay)) {
 					if (measuringMode) {
-						System.out.println(mostFrequentRoutes);
+						System.out.println(toplist);
 					//	System.out
 					//			.println("current time:" + new Date(clock.getCurrentTime()) + " processed:" + counter);
 						previousToplistWithoutDelay = toplistStringWithoutDelay;
@@ -137,8 +155,8 @@ public class DebsMain {
 						measuringResultsWriter.write(new Date(clock.getCurrentTime()) + ";" + counter
 								+ ((System.currentTimeMillis() - previousTime) / 1000 + ";"
 										+ ((double) runtime.totalMemory()) / 1000000 + ";"
-										+ mostFrequentRoutes.getAverageDelay() + ";" + mostFrequentRoutes.getMinDelay()
-										+ ";" + mostFrequentRoutes.getMaxDelay() + "\n"));
+										+ toplist.getAverageDelay() + ";" + toplist.getMinDelay()
+										+ ";" + toplist.getMaxDelay() + "\n"));
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -165,63 +183,6 @@ public class DebsMain {
 				return;
 			}
 		}
-	}
-
-	public static void runTask2() {
-		List<TaxiLog> taxiLogs = null;
-		CellHelper chelper = new CellHelper(FIRST_CELL_X, FIRST_CELL_Y, SHIFT_X, SHIFT_Y, 300);
-
-		try (DataFileParser dataFileParser = new DataFileParser(DATA_FILE_URL, DELIMITER, columncount, chelper)) {
-
-			ProfitableAreaToplistSet mostProfitableAreas = new ProfitableAreaToplistSet();
-
-			KieSession kSession = initializeSession();
-
-			// Adding global toplist to the session
-			kSession.setGlobal("mostProfitableAreas", mostProfitableAreas);
-
-			SessionPseudoClock clock = kSession.getSessionClock();
-
-			taxiLogs = dataFileParser.parseNextLinesFromCSVGroupedByDropoffDate();
-			long currentTime = DataFileParser.getCURRENT_TIME();
-			long startingTime = DataFileParser.getCURRENT_TIME();
-
-			clock.advanceTime(startingTime, TimeUnit.MILLISECONDS);
-
-			long counter = taxiLogs.size();
-			long previousTime = System.currentTimeMillis();
-			while (currentTime - startingTime <= TEST_INTERVAL_IN_IN_MS) {
-				kSession.insert(new Tick(currentTime));
-				if (currentTime >= DataFileParser.getCURRENT_TIME()) {
-					for (TaxiLog tlog : taxiLogs) {
-						tlog.setInserted(System.currentTimeMillis());
-						kSession.insert(tlog);
-						counter++;
-					}
-					taxiLogs = dataFileParser.parseNextLinesFromCSVGroupedByDropoffDate();
-				}
-
-				kSession.fireAllRules();
-
-				if ((currentTime - startingTime) % (1000 * 60 * 60) == 0) {
-					System.out.println(mostProfitableAreas);
-					System.out.println("current time:" + new Date(clock.getCurrentTime()) + " processed:" + counter);
-					System.out.println("ElapsedTime:" + ((System.currentTimeMillis() - previousTime) / 1000) + " s");
-					previousTime = System.currentTimeMillis();
-				}
-				currentTime += 1000;
-				clock.advanceTime(1, TimeUnit.SECONDS);
-			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public static KieSession initializeSession() {
-		KieServices ks = KieServices.Factory.get();
-		KieContainer kContainer = ks.getKieClasspathContainer();
-		KieSessionConfiguration config = ks.newKieSessionConfiguration();
-		config.setOption(ClockTypeOption.get("pseudo"));
-		return kContainer.newKieSession("ksession-rules", config);
+	
 	}
 }

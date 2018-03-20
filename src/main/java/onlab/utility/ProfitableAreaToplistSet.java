@@ -10,7 +10,7 @@ import java.util.TreeSet;
 import onlab.event.AreaWithProfit;
 import onlab.positioning.Cell;
 
-public class ProfitableAreaToplistSet {
+public class ProfitableAreaToplistSet implements ToplistSetInterface{
 
 	private static int MAX_ELEMENT_NUMBER = 10;
 
@@ -28,6 +28,9 @@ public class ProfitableAreaToplistSet {
 		 * if (containedArea != null) { toplist.remove(containedArea); }
 		 */
 
+		if(newArea.getDelay() == -1){
+			newArea.setDelay(System.currentTimeMillis() - newArea.getInsertedForDelay());
+		}
 		if (newArea.getMedianProfitIndex().compareTo(BigDecimal.ZERO) > 0) {
 			toplist.add(newArea);
 		}

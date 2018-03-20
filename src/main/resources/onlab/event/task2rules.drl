@@ -21,13 +21,12 @@ global onlab.utility.ProfitableAreaToplistSet mostProfitableAreas
 declare TaxiLog 
 @role(event)
 @timestamp(dropoff_datetime)
-@expires( 30m 1s)
 end
 
 declare Tick
 @role(event)
 @timestamp(currentTime)
-@expires( 1s )
+@expires( 999ms )
 end
 
 
@@ -35,12 +34,14 @@ end
 declare RefreshAreaMedian
 cell : Cell
 insertTime : long
+insertedForDelay:long
 end
 
 declare RefreshAreaCount
 cell : Cell
 license : String
 insertTime : long
+insertedForDelay:long
 end
 
 declare ActivateArea
@@ -52,6 +53,7 @@ declare TaxiLocation
 cell:Cell
 license:String
 currentTime:Date @timestamp
+insertedForDelay:long
 end
 
 
@@ -64,7 +66,7 @@ end
 rule task2_removeInvalidTaxiLog
 salience 1
 	when
-		$tlog: TaxiLog(pickup_cell == null || dropoff_cell == null || fare_amount.compareTo(BigDecimal.ZERO) < 1)
+		$tlog: TaxiLog(pickup_cell == null || dropoff_cell == null || fare_amount.compareTo(BigDecimal.ZERO) < 1 && tip_amount.compareTo(BigDecimal.ZERO) < 1)
 	then
 		
 		retract($tlog);
@@ -82,8 +84,8 @@ salience 0
     
       insertLogical(new ActivateArea($pickupCell, $currentTime));
       insertLogical(new ActivateArea($dropoffCell, $currentTime));
-      insert(new RefreshAreaMedian($pickupCell, $currentTime.getTime()));
-      insert(new RefreshAreaCount($dropoffCell, $hack_license, $currentTime.getTime()));
+      insert(new RefreshAreaMedian($pickupCell, $currentTime.getTime(), $inserted));
+      insert(new RefreshAreaCount($dropoffCell, $hack_license, $currentTime.getTime(), $inserted));
       $tlog.setProcessed(true); 
       update($tlog);
 
@@ -113,7 +115,11 @@ salience -1
 		//Használjuk a létrehozott medián akkumuláló függvényt az összes, elmúlt negyed órában befejezett TaxiLog-ra a területen.
 		$medianOfCell: BigDecimal() from accumulate 
 				(TaxiLog(pickup_cell == $cell, $fare:fare_amount, $tip:tip_amount,this before[0m,15m] $tick), 
-					median($fare.add($tip)))					
+					median($fare.add($tip)))
+		$averageOfInsertedForDelay: java.lang.Double() from accumulate (
+			RefreshAreaMedian(cell == $cell, insertedForDelay  > -1, $insertedForDelay:insertedForDelay ),
+			average($insertedForDelay)
+		 )					
 	then
 		
 		//Elõször kitöröljük a toplistából, hogy a rendezés koherens maradjon.
@@ -131,6 +137,11 @@ salience -1
 		//Ha találtunk currentTime-ot, beállítjuk.
 		if($ctime != -1){
 			$area.setLastInserted(new Date($ctime));
+		}
+		
+		if($averageOfInsertedForDelay>0){
+			$area.setInsertedForDelay($averageOfInsertedForDelay.longValue());
+			$area.setDelay(-1);
 		}
 		//Beállítjuk az új mediánt.
 		$area.setMedianProfit($medianOfCell);
@@ -162,17 +173,25 @@ salience -1
 	when
 		$ref:RefreshAreaCount($cell:cell, $time:insertTime, $license:license)
 		$area:AreaWithProfit( $cell==cell )
+		$averageOfInsertedForDelay: java.lang.Double() from accumulate (
+			ref:RefreshAreaCount(cell == $cell, insertedForDelay  > -1, $insertedForDelay:insertedForDelay ),
+			average($insertedForDelay))
 	then 
 		//Elõször kitörli az area-t a toplistából, hogy a rendezés konzisztens maradjon.
 		mostProfitableAreas.remove($area);
 		//Megnöveli a count-o, és beállítja az insertTime-ot (a jelenlegi idõt)
 		$area.increaseCountOfTaxes();
-		$area.setLastInserted(new Date($time));		
+		$area.setLastInserted(new Date($time));
+		if($averageOfInsertedForDelay > 0){
+			$area.setInsertedForDelay($averageOfInsertedForDelay.longValue());
+			$area.setDelay(-1);
+		}
+				
 		update($area);
 		mostProfitableAreas.add($area);
 		
 		//Végül beilleszt egy TaxiLocation fact-ot, majd kitörli a RefreshAreaCount-ot.
-		insert(new TaxiLocation($cell, $license, new Date($time)));    	 
+		insert(new TaxiLocation($cell, $license, new Date($time),$averageOfInsertedForDelay.longValue() ));    	 
 		retract($ref);
 end
 
@@ -180,7 +199,7 @@ end
 rule "task2_decreaseTaxiCountOnDriversPreviousCell"
 salience -2
 	when
-		$newTlocation: TaxiLocation($license:license)
+		$newTlocation: TaxiLocation($license:license, $insertedForDelay:insertedForDelay)
 		$oldTlocation: TaxiLocation(license.equals($license), $cell:cell, this before $newTlocation)
 		$area:AreaWithProfit( cell == $cell )
 	then
@@ -189,6 +208,8 @@ salience -2
 		mostProfitableAreas.remove($area);
 		$area.decreaseCountOfTaxes();
 		$area.setLastInserted($newTlocation.getCurrentTime());
+		$area.setInsertedForDelay($insertedForDelay);
+		$area.setDelay(-1);
 		update($area);
 		mostProfitableAreas.add($area);
 		retract($oldTlocation);
@@ -221,7 +242,7 @@ salience 1
 		//Beilleszt egy új RefreshAreaMedian tényt a WM-be, hogy frissüljön a pickupCell-hez tartozó medián.
 		$tlog.setOlderThanAQuarter(true);
 		update($tlog);	
-		insert(new RefreshAreaMedian($tlog.getPickup_cell(), -1));
+		insert(new RefreshAreaMedian($tlog.getPickup_cell(), -1, -1));
 end
 
 //Kitörli azokat az AreaWithProfit-okat, amiknek már mindene 0, és régebbiek, mint fél óra. 
@@ -234,8 +255,6 @@ salience -5
 		mostProfitableAreas.remove($area);
 		retract($area);
 end
-		
-
 
 
 
