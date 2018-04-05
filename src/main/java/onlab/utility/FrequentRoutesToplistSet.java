@@ -17,28 +17,19 @@ public class FrequentRoutesToplistSet implements ToplistSetInterface{
 	private TreeSet<Route> toplist = new TreeSet<Route>();
 	private Map<MultiKey, Route> routeMap = new HashMap<MultiKey, Route>();
 
+	//TODO törölni
+	public long counter1 = 0;
+	public long counter2 = 0;
+	public long counter3 = 0;
 	public boolean add(Route newRoute) {
 
 		if (newRoute == null) {
 			return false;
 		}
-
-		// MultiKey key = new MultiKey(newRoute.getPickup_cell(),
-		// newRoute.getDropoff_cell());
-		// Route oldRoute = routeMap.put(key, newRoute);
-
-		// TODO ez lehet, hogy kell, de nem biztos
-		/*
-		 * if( oldRoute != null){ toplist.remove(oldRoute); }
-		 */
-
 		if (newRoute.getFrequency() > 0 && newRoute.getLastDropoffTime() != null) {
 			toplist.add(newRoute);
 		}
 
-		if (newRoute.getDelay() == -1) {
-			newRoute.setDelay(System.currentTimeMillis() - newRoute.getInsertedForDelay());
-		}
 		return true;
 	}
 
@@ -129,7 +120,6 @@ public class FrequentRoutesToplistSet implements ToplistSetInterface{
 	// for Esper implementation
 	public void refreshRoute(Cell pickupCell, Cell dropoffCell, Date lastDropoffTime, long frequency) {
 		Route route = remove(pickupCell, dropoffCell);
-
 		if (route == null) {
 			route = new Route(pickupCell, dropoffCell, lastDropoffTime, frequency);
 			routeMap.put(new MultiKey(pickupCell, dropoffCell), route);
@@ -137,14 +127,15 @@ public class FrequentRoutesToplistSet implements ToplistSetInterface{
 			if (lastDropoffTime != null) {
 				route.setLastDropoffTime(lastDropoffTime);
 			}
-
 			route.setFrequency(frequency);
 		}
 		if (frequency > 0 && lastDropoffTime != null) {
 			toplist.add(route);
 		}
+		
 
 	}
+
 
 	// for BeepBeep implementation
 	public void increaseRouteFrequency(Cell pickupCell, Cell dropoffCell, Date lastDropoffTime) {
@@ -221,4 +212,33 @@ public class FrequentRoutesToplistSet implements ToplistSetInterface{
 
 		return min;
 	}
+
+	@Override
+	public void refreshDelayTimes() {
+		for(Route r : toplist){
+			if(r.getDelay() == -1){
+				r.setDelay(System.currentTimeMillis() - r.getInsertedForDelay());
+			}
+		}
+		
+	}
+	
+	@Override
+	public void refreshInsertedForDelay(long insertedForDelay, Cell... cells) {
+		Route route = routeMap.get(new MultiKey(cells[0], cells[1]));
+		counter1++;
+		if(route != null){
+			route.setInsertedForDelay(insertedForDelay);
+			route.setDelay(-1);
+			counter2++;
+		}
+		
+	}
+	@Override
+	public void clear() {
+		toplist.clear();
+		routeMap.clear();
+		
+	}
+	
 }

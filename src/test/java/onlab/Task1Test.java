@@ -114,6 +114,7 @@ public class Task1Test {
 		kSession.fireAllRules();
 
 		boolean check = route.equals(toplist.get(0)) && toplist.size() == 1;
+		toplist.refreshInsertedForDelay(1, tlog1.getPickup_cell());
 		assertTrue(check);
 	}
 

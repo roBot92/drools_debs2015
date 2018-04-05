@@ -1,7 +1,7 @@
 package onlab.event
 
 
-/*
+
 
 //list any import classes here.
 //import accumulate MedianAccumulateFunction medianf
@@ -191,9 +191,9 @@ salience -2
 		//taxik számát (count), majd visszateszi a toplistába, végül kitörli a régebbit.
 		mostProfitableAreas.remove($area);
 		$area.decreaseCountOfTaxes();
-		$area.setLastInserted($newTlocation.getCurrentTime());
-		$area.setInsertedForDelay($insertedForDelay);
-		$area.setDelay(-1);
+	//	$area.setLastInserted($newTlocation.getCurrentTime());
+	//	$area.setInsertedForDelay($insertedForDelay);
+	//	$area.setDelay(-1);
 		update($area);
 		mostProfitableAreas.add($area);
 		retract($oldTlocation);
@@ -256,4 +256,4 @@ end
 
 query "taxis"()
 	taxis: TaxiLog()
-end*/
+end

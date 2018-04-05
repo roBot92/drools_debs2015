@@ -28,9 +28,7 @@ public class ProfitableAreaToplistSet implements ToplistSetInterface{
 		 * if (containedArea != null) { toplist.remove(containedArea); }
 		 */
 
-		if(newArea.getDelay() == -1){
-			newArea.setDelay(System.currentTimeMillis() - newArea.getInsertedForDelay());
-		}
+		
 		if (newArea.getMedianProfitIndex().compareTo(BigDecimal.ZERO) > 0) {
 			toplist.add(newArea);
 		}
@@ -219,4 +217,30 @@ public class ProfitableAreaToplistSet implements ToplistSetInterface{
 
 		return min;
 	}
+	@Override
+	public void refreshDelayTimes() {
+		for(AreaWithProfit area : toplist){
+			if(area.getDelay() == -1){
+				area.setDelay(System.currentTimeMillis() - area.getInsertedForDelay());
+			}
+		}
+		
+	}
+	
+	@Override
+	public void refreshInsertedForDelay(long insertedForDelay, Cell... cells) {
+		AreaWithProfit area = areaMap.get(cells[0]);
+		if(area != null){
+			area.setInsertedForDelay(insertedForDelay);
+			area.setDelay(-1);
+		}
+		
+	}
+	@Override
+	public void clear() {
+		toplist.clear();
+		areaMap.clear();
+		
+	}
+	
 }
