@@ -138,7 +138,7 @@ public class FrequentRoutesToplistSet implements ToplistSetInterface{
 
 
 	// for BeepBeep implementation
-	public void increaseRouteFrequency(Cell pickupCell, Cell dropoffCell, Date lastDropoffTime) {
+	public void increaseRouteFrequency(Cell pickupCell, Cell dropoffCell, Date lastDropoffTime, long insertedForDelay) {
 		Route route = remove(pickupCell, dropoffCell);
 		if (route == null) {
 			route = new Route(pickupCell, dropoffCell, lastDropoffTime, 1);
@@ -147,7 +147,8 @@ public class FrequentRoutesToplistSet implements ToplistSetInterface{
 			route.increaseFrequency();
 			route.setLastDropoffTime(lastDropoffTime);
 		}
-
+		route.setDelay(-1);
+		route.setInsertedForDelay(insertedForDelay);
 		toplist.add(route);
 	}
 

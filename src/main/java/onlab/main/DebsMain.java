@@ -67,10 +67,10 @@ public class DebsMain {
 
 		runTask(new ProfitableAreaToplistSet(), "mostProfitableAreas", task2ResultToCompareFileName,
 				OUTPUT_COOMPARING_MODE, 2);
-	//	runTask(new ProfitableAreaToplistSet(), "mostProfitableAreas", task2TimeMeasuringResultFileName,
-	//			TIME_MEASURING_MODE, 2);
-	//	runTask(new ProfitableAreaToplistSet(), "mostProfitableAreas", task2MemoryMeasuringResultFileName,
-	//			MEMORY_MEASURING_MODE, 2);
+		runTask(new ProfitableAreaToplistSet(), "mostProfitableAreas", task2TimeMeasuringResultFileName,
+				TIME_MEASURING_MODE, 2);
+		runTask(new ProfitableAreaToplistSet(), "mostProfitableAreas", task2MemoryMeasuringResultFileName,
+				MEMORY_MEASURING_MODE, 2);
 	}
 
 	public static KieSession initializeSession() {
@@ -117,7 +117,7 @@ public class DebsMain {
 
 			clock.advanceTime(startingTime, TimeUnit.MILLISECONDS);
 
-			long counter = taxiLogs.size();
+			long counter = 0;
 			long previousTime = System.currentTimeMillis();
 			String previousToplistWithoutDelay = null;
 
@@ -135,7 +135,7 @@ public class DebsMain {
 				}
 
 				kSession.fireAllRules();
-				handlePrintActions(toplist, runningMode, previousToplistWithoutDelay, resultFileWriter, currentTime,
+				previousToplistWithoutDelay = handlePrintActions(toplist, runningMode, previousToplistWithoutDelay, resultFileWriter, currentTime,
 						counter, startingTime, BENCHMARK_FREQUENCY_IN_MS, previousTime, runtime);
 
 				previousTime = System.currentTimeMillis();
@@ -160,7 +160,7 @@ public class DebsMain {
 	}
 
 	// Ezt használjuk a másik két feladatban is.
-	public static void handlePrintActions(final ToplistSetInterface toplist, final int runningMode,
+	public static String  handlePrintActions(final ToplistSetInterface toplist, final int runningMode,
 			String previousToplistWithoutDelay, BufferedWriter resultFileWriter, final long currentTime, long counter,
 			final long startingTime, final long benchmarkFrequency, long previousTime, Runtime runtime)
 			throws IOException {
@@ -193,8 +193,8 @@ public class DebsMain {
 			// késleltetés;aktuális legnagyobb késleltetés
 			if (runningMode == TIME_MEASURING_MODE) {
 				resultFileWriter.write(DataFileParser.SIMPLE_DATE_FORMAT.format(new Date(currentTime)) + ";" + counter
-						+ ";" + ((System.currentTimeMillis() - previousTime) / 1000 + ";" + toplist.getAverageDelay()
-								+ ";" + toplist.getMinDelay() + ";" + toplist.getMaxDelay()));
+						+ ";" + (System.currentTimeMillis() - previousTime) + ";" + toplist.getAverageDelay()
+								+ ";" + toplist.getMinDelay() + ";" + toplist.getMaxDelay());
 			} else {
 				// CSV formátum memóriamérés esetén: aktuális
 				// idõpont;eddig feldolgozott sorok száma;
@@ -211,5 +211,6 @@ public class DebsMain {
 
 			resultFileWriter.newLine();
 		}
+		return previousToplistWithoutDelay;
 	}
 }
