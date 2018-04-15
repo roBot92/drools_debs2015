@@ -1,2 +1,6 @@
 /target/
 /bin/
+/comparableResultsTask1.csv
+/comparableResultsTask2.csv
+/memoryMeasuringResultsTask1.csv
+/timeMeasuringResultsTask1.csv

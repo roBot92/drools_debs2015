@@ -35,12 +35,14 @@ public class DebsMain {
 	public static final BigDecimal FIRST_CELL_Y = BigDecimal.valueOf(41.474937);
 	public static final BigDecimal SHIFT_Y = BigDecimal.valueOf(0.004491556);
 	public static final BigDecimal SHIFT_X = BigDecimal.valueOf(0.005986);
-	public static final long TEST_INTERVAL_IN_IN_MS = 1 * 60 * 60 * 1000;
+	public static final long TEST_INTERVAL_IN_IN_MS =24 * 60 * 60 * 1000;
 	public static final long BENCHMARK_FREQUENCY_IN_MS = 1000 * 60;
 	public static final long SLEEP_TIME_IN_MS = 100;
 	public static final int TIME_MEASURING_MODE = 1;
 	public static final int MEMORY_MEASURING_MODE = 2;
 	public static final int OUTPUT_COOMPARING_MODE = 3;
+	//Ez csak a handlePrintActions-nek kell
+	private static long previousTime = 0;
 
 	public static String task1TimeMeasuringResultFileName = "timeMeasuringResultsTask1.csv";
 	public static String task1MemoryMeasuringResultFileName = "memoryMeasuringResultsTask1.csv";
@@ -53,7 +55,7 @@ public class DebsMain {
 	public static void main(String[] args) throws FileNotFoundException, ParseException {
 
 		//runTask1();
-		 runTask2();
+		runTask2();
 	}
 
 	public static void runTask1() {
@@ -118,7 +120,7 @@ public class DebsMain {
 			clock.advanceTime(startingTime, TimeUnit.MILLISECONDS);
 
 			long counter = 0;
-			long previousTime = System.currentTimeMillis();
+			restartCurrentTime();
 			String previousToplistWithoutDelay = null;
 
 			// A megadott ideig dolgoz fel a teszt
@@ -136,7 +138,7 @@ public class DebsMain {
 
 				kSession.fireAllRules();
 				previousToplistWithoutDelay = handlePrintActions(toplist, runningMode, previousToplistWithoutDelay, resultFileWriter, currentTime,
-						counter, startingTime, BENCHMARK_FREQUENCY_IN_MS, previousTime, runtime);
+						counter, startingTime, BENCHMARK_FREQUENCY_IN_MS, runtime);
 
 				previousTime = System.currentTimeMillis();
 
@@ -162,8 +164,9 @@ public class DebsMain {
 	// Ezt használjuk a másik két feladatban is.
 	public static String  handlePrintActions(final ToplistSetInterface toplist, final int runningMode,
 			String previousToplistWithoutDelay, BufferedWriter resultFileWriter, final long currentTime, long counter,
-			final long startingTime, final long benchmarkFrequency, long previousTime, Runtime runtime)
+			final long startingTime, final long benchmarkFrequency, Runtime runtime)
 			throws IOException {
+
 		String toplistStringWithoutDelay = toplist.toStringWithoutDelay();
 		if (!toplistStringWithoutDelay.equals(previousToplistWithoutDelay)) {
 			if (runningMode == TIME_MEASURING_MODE || runningMode == MEMORY_MEASURING_MODE) {
@@ -183,9 +186,12 @@ public class DebsMain {
 		// mennyi
 		// idõ alatt, vagy megmérjük az aktuális lefoglalt memóriát egy
 		// kis várakozás után
+		if(previousTime == 0){
+			previousTime = System.currentTimeMillis();
+		}
 		if ((runningMode == TIME_MEASURING_MODE || runningMode == MEMORY_MEASURING_MODE)
 				&& (currentTime - startingTime) % benchmarkFrequency == 0) {
-
+			
 			// CSV formátum idõmérés esetén: aktuális idõpont;eddig
 			// feldolgozott
 			// sorok száma; elõzõ kiírás óta eltelt idõ;
@@ -195,6 +201,7 @@ public class DebsMain {
 				resultFileWriter.write(DataFileParser.SIMPLE_DATE_FORMAT.format(new Date(currentTime)) + ";" + counter
 						+ ";" + (System.currentTimeMillis() - previousTime) + ";" + toplist.getAverageDelay()
 								+ ";" + toplist.getMinDelay() + ";" + toplist.getMaxDelay());
+				previousTime = System.currentTimeMillis();
 			} else {
 				// CSV formátum memóriamérés esetén: aktuális
 				// idõpont;eddig feldolgozott sorok száma;
@@ -212,5 +219,9 @@ public class DebsMain {
 			resultFileWriter.newLine();
 		}
 		return previousToplistWithoutDelay;
+	}
+	
+	public static void restartCurrentTime(){
+		previousTime = 0;
 	}
 }
