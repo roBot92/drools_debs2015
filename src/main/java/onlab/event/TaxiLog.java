@@ -165,12 +165,8 @@ public class TaxiLog {
 	}
 
 	public void setPayment_type(String payment_type) {
-		if (!"UNK".equals(payment_type) && !"CRD".equals(payment_type) && !"CSH".equals(payment_type)) {
-			LOGGER.warning("INVALID PAYMENT TYPE! payment type:" + payment_type);
-			this.payment_type = null;
-		} else {
 			this.payment_type = payment_type;
-		}
+		
 
 	}
 

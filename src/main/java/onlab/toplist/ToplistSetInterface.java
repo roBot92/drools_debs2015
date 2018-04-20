@@ -1,4 +1,4 @@
-package onlab.utility;
+package onlab.toplist;
 
 import onlab.positioning.Cell;
 

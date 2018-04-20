@@ -22,26 +22,27 @@ import onlab.event.TaxiLog;
 import onlab.event.Tick;
 import onlab.positioning.*;
 import onlab.utility.DataFileParser;
-import onlab.utility.FrequentRoutesToplistSet;
-import onlab.utility.ProfitableAreaToplistSet;
-import onlab.utility.ToplistSetInterface;
+import onlab.toplist.FrequentRoutesToplistSet;
+import onlab.utility.PrintHelper;
+import onlab.toplist.ProfitableAreaToplistSet;
+import onlab.toplist.ToplistSetInterface;
 
 public class DebsMain {
 
-	public static final String DATA_FILE_URL = "F:\\\\dev\\sorted_data.csv";
+	public static final String DATA_FILE_URL = "F:\\\\sorted_data.csv";
 	public static final String DELIMITER = ",";
 	public static final int columncount = 17;
 	public static final BigDecimal FIRST_CELL_X = BigDecimal.valueOf(-74.913585);
 	public static final BigDecimal FIRST_CELL_Y = BigDecimal.valueOf(41.474937);
 	public static final BigDecimal SHIFT_Y = BigDecimal.valueOf(0.004491556);
-	public static final BigDecimal SHIFT_X = BigDecimal.valueOf(0.005986);
-	public static final long TEST_INTERVAL_IN_IN_MS =24 * 60 * 60 * 1000;
+	public static final BigDecimal SHIFT_X = BigDecimal.valueOf(0.00986);
+	public static final long TEST_INTERVAL_IN_IN_MS = 31*24 * 60 * 60 * 1000l;
 	public static final long BENCHMARK_FREQUENCY_IN_MS = 1000 * 60;
 	public static final long SLEEP_TIME_IN_MS = 100;
 	public static final int TIME_MEASURING_MODE = 1;
 	public static final int MEMORY_MEASURING_MODE = 2;
 	public static final int OUTPUT_COOMPARING_MODE = 3;
-	//Ez csak a handlePrintActions-nek kell
+	// Ez csak a handlePrintActions-nek kell
 	private static long previousTime = 0;
 
 	public static String task1TimeMeasuringResultFileName = "timeMeasuringResultsTask1.csv";
@@ -54,15 +55,19 @@ public class DebsMain {
 
 	public static void main(String[] args) throws FileNotFoundException, ParseException {
 
-		//runTask1();
-		runTask2();
+		 runTask1();
+		//runTask2();
 	}
 
 	public static void runTask1() {
-		runTask(new FrequentRoutesToplistSet(), "mostFrequentRoutes", task1ResultToCompareFileName, OUTPUT_COOMPARING_MODE, 1);
-		runTask(new FrequentRoutesToplistSet(), "mostFrequentRoutes", task1TimeMeasuringResultFileName,	TIME_MEASURING_MODE, 1);
+		runTask(new FrequentRoutesToplistSet(), "mostFrequentRoutes", task1MemoryMeasuringResultFileName,
+				MEMORY_MEASURING_MODE, 1);
+		runTask(new FrequentRoutesToplistSet(), "mostFrequentRoutes", task1ResultToCompareFileName,
+				OUTPUT_COOMPARING_MODE, 1);
+		runTask(new FrequentRoutesToplistSet(), "mostFrequentRoutes", task1TimeMeasuringResultFileName,
+				TIME_MEASURING_MODE, 1);
 
-		runTask(new FrequentRoutesToplistSet(), "mostFrequentRoutes", task1MemoryMeasuringResultFileName,MEMORY_MEASURING_MODE, 1);
+		
 	}
 
 	public static void runTask2() {
@@ -86,6 +91,7 @@ public class DebsMain {
 	public static void runTask(ToplistSetInterface toplist, String globalToplistVariableName, String fileName,
 			int runningMode, int divisor) {
 
+		
 		List<TaxiLog> taxiLogs = null;
 		CellHelper chelper = new CellHelper(FIRST_CELL_X, FIRST_CELL_Y, SHIFT_X.divide(BigDecimal.valueOf(divisor)),
 				SHIFT_Y.divide(BigDecimal.valueOf(divisor)), 300 * divisor);
@@ -103,7 +109,9 @@ public class DebsMain {
 			e1.printStackTrace();
 			return;
 		}
-
+		
+		
+		
 		try (DataFileParser dataFileParser = new DataFileParser(DATA_FILE_URL, DELIMITER, columncount, chelper)) {
 
 			KieSession kSession = initializeSession();
@@ -120,10 +128,17 @@ public class DebsMain {
 			clock.advanceTime(startingTime, TimeUnit.MILLISECONDS);
 
 			long counter = 0;
-			restartCurrentTime();
+			PrintHelper.restartCurrentTime();
 			String previousToplistWithoutDelay = null;
 
 			// A megadott ideig dolgoz fel a teszt
+			System.gc();
+			try {
+				Thread.sleep(10000);
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
+				return;
+			}
 			while (currentTime - startingTime <= TEST_INTERVAL_IN_IN_MS) {
 				kSession.insert(new Tick(currentTime));
 				if (currentTime >= DataFileParser.getCURRENT_TIME()) {
@@ -133,12 +148,11 @@ public class DebsMain {
 						counter++;
 					}
 					taxiLogs = dataFileParser.parseNextLinesFromCSVGroupedByDropoffDate();
-					// System.out.println(freqRouteToplist);
 				}
 
 				kSession.fireAllRules();
-				previousToplistWithoutDelay = handlePrintActions(toplist, runningMode, previousToplistWithoutDelay, resultFileWriter, currentTime,
-						counter, startingTime, BENCHMARK_FREQUENCY_IN_MS, runtime);
+				previousToplistWithoutDelay = PrintHelper.handlePrintActions(toplist, runningMode, previousToplistWithoutDelay,
+						resultFileWriter, currentTime, counter, startingTime, BENCHMARK_FREQUENCY_IN_MS, runtime);
 
 				previousTime = System.currentTimeMillis();
 
@@ -161,67 +175,4 @@ public class DebsMain {
 
 	}
 
-	// Ezt használjuk a másik két feladatban is.
-	public static String  handlePrintActions(final ToplistSetInterface toplist, final int runningMode,
-			String previousToplistWithoutDelay, BufferedWriter resultFileWriter, final long currentTime, long counter,
-			final long startingTime, final long benchmarkFrequency, Runtime runtime)
-			throws IOException {
-
-		String toplistStringWithoutDelay = toplist.toStringWithoutDelay();
-		if (!toplistStringWithoutDelay.equals(previousToplistWithoutDelay)) {
-			if (runningMode == TIME_MEASURING_MODE || runningMode == MEMORY_MEASURING_MODE) {
-				toplist.refreshDelayTimes();
-				System.out.println(toplist);
-				previousToplistWithoutDelay = toplistStringWithoutDelay;
-			} else {
-				resultFileWriter.write(toplistStringWithoutDelay);
-				resultFileWriter.newLine();
-				resultFileWriter.write("current time:" + new Date(currentTime) + " processed:" + counter);
-				resultFileWriter.newLine();
-				previousToplistWithoutDelay = toplistStringWithoutDelay;
-			}
-
-		}
-		// Egységidõnként megmérjük, hogy mennyit dolgoztunk fel, és
-		// mennyi
-		// idõ alatt, vagy megmérjük az aktuális lefoglalt memóriát egy
-		// kis várakozás után
-		if(previousTime == 0){
-			previousTime = System.currentTimeMillis();
-		}
-		if ((runningMode == TIME_MEASURING_MODE || runningMode == MEMORY_MEASURING_MODE)
-				&& (currentTime - startingTime) % benchmarkFrequency == 0) {
-			
-			// CSV formátum idõmérés esetén: aktuális idõpont;eddig
-			// feldolgozott
-			// sorok száma; elõzõ kiírás óta eltelt idõ;
-			// aktuális átlagos késleltetés; aktuális legkisebb
-			// késleltetés;aktuális legnagyobb késleltetés
-			if (runningMode == TIME_MEASURING_MODE) {
-				resultFileWriter.write(DataFileParser.SIMPLE_DATE_FORMAT.format(new Date(currentTime)) + ";" + counter
-						+ ";" + (System.currentTimeMillis() - previousTime) + ";" + toplist.getAverageDelay()
-								+ ";" + toplist.getMinDelay() + ";" + toplist.getMaxDelay());
-				previousTime = System.currentTimeMillis();
-			} else {
-				// CSV formátum memóriamérés esetén: aktuális
-				// idõpont;eddig feldolgozott sorok száma;
-				// aktuális felhasznált memória
-				System.gc();
-				try {
-					Thread.sleep(SLEEP_TIME_IN_MS);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				resultFileWriter.write(DataFileParser.SIMPLE_DATE_FORMAT.format(new Date(currentTime)) + ";" + counter
-						+ ";" + (runtime.totalMemory() - runtime.freeMemory()));
-			}
-
-			resultFileWriter.newLine();
-		}
-		return previousToplistWithoutDelay;
-	}
-	
-	public static void restartCurrentTime(){
-		previousTime = 0;
-	}
 }

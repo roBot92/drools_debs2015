@@ -1,4 +1,4 @@
-package onlab.utility;
+package onlab.toplist;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -17,16 +17,13 @@ public class ProfitableAreaToplistSet implements ToplistSetInterface{
 	TreeSet<AreaWithProfit> toplist = new TreeSet<AreaWithProfit>();
 	Map<Cell, AreaWithProfit> areaMap = new HashMap<Cell, AreaWithProfit>();
 
+	//A toplistából törlésrõl külön kell gondoskodni.
 	public boolean add(AreaWithProfit newArea) {
 
 		if (newArea == null) {
 			return false;
 		}
 		areaMap.put(newArea.getCell(), newArea);
-
-		/*
-		 * if (containedArea != null) { toplist.remove(containedArea); }
-		 */
 
 		
 		if (newArea.getMedianProfitIndex().compareTo(BigDecimal.ZERO) > 0) {

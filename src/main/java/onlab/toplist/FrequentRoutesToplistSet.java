@@ -1,4 +1,4 @@
-package onlab.utility;
+package onlab.toplist;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -17,15 +17,14 @@ public class FrequentRoutesToplistSet implements ToplistSetInterface{
 	private TreeSet<Route> toplist = new TreeSet<Route>();
 	private Map<MultiKey, Route> routeMap = new HashMap<MultiKey, Route>();
 
-	//TODO törölni
-	public long counter1 = 0;
-	public long counter2 = 0;
-	public long counter3 = 0;
+
+	//A toplistából való törlésrõl kívülrõl kell gondoskodni!
 	public boolean add(Route newRoute) {
 
 		if (newRoute == null) {
 			return false;
 		}
+		routeMap.put(new MultiKey(newRoute.getPickup_cell(), newRoute.getDropoff_cell()), newRoute);
 		if (newRoute.getFrequency() > 0 && newRoute.getLastDropoffTime() != null) {
 			toplist.add(newRoute);
 		}
@@ -108,12 +107,6 @@ public class FrequentRoutesToplistSet implements ToplistSetInterface{
 	}
 
 	public boolean remove(Route route) {
-		// TODO lehet, hogy kell még
-		/*
-		 * if(route == null) { return null; } return
-		 * remove(route.getPickup_cell(), route.getDropoff_cell());
-		 */
-
 		return toplist.remove(route);
 	}
 
@@ -227,11 +220,9 @@ public class FrequentRoutesToplistSet implements ToplistSetInterface{
 	@Override
 	public void refreshInsertedForDelay(long insertedForDelay, Cell... cells) {
 		Route route = routeMap.get(new MultiKey(cells[0], cells[1]));
-		counter1++;
 		if(route != null){
 			route.setInsertedForDelay(insertedForDelay);
 			route.setDelay(-1);
-			counter2++;
 		}
 		
 	}

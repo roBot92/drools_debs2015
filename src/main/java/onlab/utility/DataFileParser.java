@@ -70,11 +70,15 @@ public class DataFileParser implements AutoCloseable{
 		while (scanner.hasNextLine()) {
 			nextLine = scanner.nextLine();
 			TaxiLog taxilog = parseNextLine(nextLine.split(delimiter));
-			if (currentDate.before(taxilog.getDropoff_datetime())) {
+			if (taxilog != null && currentDate.before(taxilog.getDropoff_datetime())) {
 				nextMinFirstLine = nextLine;
 				break;
 			}
-			resultList.add(taxilog);
+			if(taxilog != null){
+				resultList.add(taxilog);
+			}
+			
+			
 		}
 
 		LOGGER.info("LastPArsedLine:"+parsed);
@@ -197,7 +201,10 @@ public class DataFileParser implements AutoCloseable{
 			LOGGER.warning("Too " + (line.length > columncount ? "many" : "few") + " columns! HackLicense:" + line[1]
 					+ " Dropoff datetime:" + line[3]);
 			return null;
-		} else {
+		} else if(hasBlankMember(line)){
+			LOGGER.info("Insufficient record skipped. Dropoff datetime:" + line[3] + "\t" + "HackLicense:" + line[1]);
+			return null;
+		} else{
 			TaxiLog taxiLog = new TaxiLog();
 			taxiLog.setMedallion(line[0]);
 			taxiLog.setHack_license(line[1]);
@@ -284,6 +291,16 @@ public class DataFileParser implements AutoCloseable{
 			LOGGER.log(Level.SEVERE, fileName + " not found.", e);
 			return null;
 		}
+	}
+	
+	private static boolean hasBlankMember(String[] stringArray){
+		for(String s:stringArray){
+			if(s == null || s.trim().isEmpty()){
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 

@@ -3,7 +3,7 @@
 package onlab.event
 
 
-/*
+
 
 //list any import classes here.
 import onlab.positioning.*
@@ -15,8 +15,8 @@ import java.util.ArrayList
 
 
 //declare any global variables here
-global onlab.utility.ProfitableAreaToplistSet mostProfitableAreas
-global onlab.utility.FrequentRoutesToplistSet mostFrequentRoutes
+global onlab.toplist.ProfitableAreaToplistSet mostProfitableAreas
+global onlab.toplist.FrequentRoutesToplistSet mostFrequentRoutes
 
 
 
@@ -165,4 +165,4 @@ end
 
 query "refresh"
 	refresh: RefreshRoute()
-end*/
+end

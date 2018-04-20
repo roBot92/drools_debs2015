@@ -23,7 +23,7 @@ import onlab.positioning.Cell;
 import onlab.event.Route;
 import onlab.event.TaxiLog;
 import onlab.event.Tick;
-import onlab.utility.FrequentRoutesToplistSet;
+import onlab.toplist.FrequentRoutesToplistSet;
 
 public class Task1Test {
 

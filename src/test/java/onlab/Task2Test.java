@@ -26,7 +26,7 @@ import onlab.event.AreaWithProfit;
 import onlab.event.TaxiLog;
 import onlab.event.Tick;
 import onlab.positioning.Cell;
-import onlab.utility.ProfitableAreaToplistSet;
+import onlab.toplist.ProfitableAreaToplistSet;
 
 public class Task2Test {
 
