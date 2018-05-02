@@ -1,4 +1,4 @@
-package hu.bme.mit.utility;
+package hu.bme.mit.drools.utility;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -7,6 +7,8 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 import org.kie.api.runtime.rule.AccumulateFunction;
+
+import hu.bme.mit.utility.CustomTreeMultiset;
 
 public class MedianAccumulateFunction implements AccumulateFunction/*<MedianAccumulateFunction.MedianData>*/ {
 

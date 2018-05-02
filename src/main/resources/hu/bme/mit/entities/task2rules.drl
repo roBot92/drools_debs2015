@@ -1,6 +1,6 @@
 package hu.bme.mit.entities
 
-/*
+
 
 
 //list any import classes here.
@@ -10,17 +10,18 @@ import org.kie.api.runtime.rule.QueryResults
 import java.math.BigDecimal 
 import java.util.ArrayList
 import java.util.Date
-import accumulate hu.bme.mit.utility.MedianAccumulateFunction median
+import accumulate hu.bme.mit.drools.utility.MedianAccumulateFunction median
 
 
 //declare any global variables here
 global hu.bme.mit.toplist.ProfitableAreaToplistSet mostProfitableAreas
  
-
+ 
 
 declare TaxiLog 
 @role(event)
 @timestamp(dropoff_datetime)
+@expires(15m2s)
 end
 
 declare Tick
@@ -245,10 +246,7 @@ end
 
 
 
-query "task2_ridesOfDriver"  (String $license, java.util.Date $threshold)
 
-      tlog:TaxiLog(hack_license.equals($license) , $threshold.before(dropoff_datetime) )
-end
 
 //For debug
 query "areas"  ()
@@ -258,4 +256,31 @@ end
 
 query "taxis"()
 	taxis: TaxiLog()
-end*/
+end
+
+query ticks()
+ticks:  Tick()
+end
+
+
+
+query RefreshAreaMedians()
+	reams: RefreshAreaMedian()
+end
+
+query RefreshAreaCounts()
+	refacounts: RefreshAreaCount()
+end
+
+query ActivateAreas()
+	aa: ActivateArea()
+end
+
+query TaxiLocations()
+ tlocs:TaxiLocation()
+end
+
+
+query AreaWithProfits()
+areas:AreaWithProfit()
+end

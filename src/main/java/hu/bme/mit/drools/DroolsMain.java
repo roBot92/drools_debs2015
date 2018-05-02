@@ -33,13 +33,13 @@ public class DroolsMain {
 
 	public static void main(String[] args) throws FileNotFoundException, ParseException {
 
-		 runTask1();
-		//runTask2();
+		runTask1();
+		runTask2();
 	}
 
 	public static void runTask1() {
-		//runTask(new FrequentRoutesToplistSet(), "mostFrequentRoutes", task1MemoryMeasuringResultFileName,
-		//		MEMORY_MEASURING_MODE, 1);
+		runTask(new FrequentRoutesToplistSet(), "mostFrequentRoutes", ExecutionSetup.task1MemoryMeasuringResultFileName,
+				ExecutionSetup.MEMORY_MEASURING_MODE, 1);
 		
 		runTask(new FrequentRoutesToplistSet(), "mostFrequentRoutes", ExecutionSetup.task1TimeMeasuringResultFileName,
 				ExecutionSetup.TIME_MEASURING_MODE, 1);
@@ -111,7 +111,7 @@ public class DroolsMain {
 			PrintHelper.restartCurrentTime();
 			String previousToplistWithoutDelay = null;
 
-			// A megadott ideig dolgoz fel a teszt
+			
 			System.gc();
 			try {
 				Thread.sleep(10000);
@@ -119,6 +119,7 @@ public class DroolsMain {
 				e1.printStackTrace();
 				return;
 			}
+			// A megadott ideig dolgoz fel a teszt
 			while (currentTime - startingTime <= ExecutionSetup.TEST_INTERVAL_IN_IN_MS) {
 				kSession.insert(new Tick(currentTime));
 				if (currentTime >= DataFileParser.getCURRENT_TIME()) {
@@ -133,7 +134,6 @@ public class DroolsMain {
 				kSession.fireAllRules();
 				previousToplistWithoutDelay = PrintHelper.handlePrintActions(toplist, runningMode, previousToplistWithoutDelay,
 						resultFileWriter, currentTime, counter, startingTime, ExecutionSetup.BENCHMARK_FREQUENCY_IN_MS, runtime);
-
 
 				currentTime += 1000;
 				clock.advanceTime(1, TimeUnit.SECONDS);
