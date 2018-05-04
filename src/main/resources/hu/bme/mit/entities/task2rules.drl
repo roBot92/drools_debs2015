@@ -21,7 +21,7 @@ global hu.bme.mit.toplist.ProfitableAreaToplistSet mostProfitableAreas
 declare TaxiLog 
 @role(event)
 @timestamp(dropoff_datetime)
-@expires(15m2s)
+@expires(15m1s)
 end
 
 declare Tick
@@ -61,15 +61,14 @@ end
 
 
 declare AreaWithProfit
-@role(event)
-@timestamp(lastInserted)
+@role
 end
 
 //Kidobjuk az érvénytelen TaxiLog-okat: hiányzik valamelyik cella, vagy viteldíj <=0 USD.
 rule task2_removeInvalidTaxiLog
-salience 1
+salience 2
 	when
-		$tlog: TaxiLog(pickup_cell == null || dropoff_cell == null || fare_amount.compareTo(BigDecimal.ZERO) < 1 && tip_amount.compareTo(BigDecimal.ZERO) < 1)
+		$tlog: TaxiLog(!processed && (pickup_cell == null || dropoff_cell == null || fare_amount.compareTo(BigDecimal.ZERO) < 1 && tip_amount.compareTo(BigDecimal.ZERO) < 1))
 	then
 		
 		retract($tlog);
@@ -158,19 +157,16 @@ end
 rule "task2_increaseAreaCount_rule"
 salience -1
 	when
-		$ref:RefreshAreaCount($cell:cell, $time:insertTime, $license:license)
+		$ref:RefreshAreaCount($cell:cell, $time:insertTime, $license:license, $insertedForDelay: insertedForDelay)
 		$area:AreaWithProfit( $cell==cell )
-		$averageOfInsertedForDelay: java.lang.Double() from accumulate (
-			ref:RefreshAreaCount(cell == $cell, insertedForDelay  > -1, $insertedForDelay:insertedForDelay ),
-			average($insertedForDelay))
 	then 
 		//Elõször kitörli az area-t a toplistából, hogy a rendezés konzisztens maradjon.
 		mostProfitableAreas.remove($area);
 		//Megnöveli a count-o, és beállítja az insertTime-ot (a jelenlegi idõt)
 		$area.increaseCountOfTaxes();
 		$area.setLastInserted(new Date($time));
-		if($averageOfInsertedForDelay > 0){
-			$area.setInsertedForDelay($averageOfInsertedForDelay.longValue());
+		if($insertedForDelay > 0){
+			$area.setInsertedForDelay($insertedForDelay);
 			$area.setDelay(-1);
 		}
 				
@@ -178,7 +174,7 @@ salience -1
 		mostProfitableAreas.add($area);
 		
 		//Végül beilleszt egy TaxiLocation fact-ot, majd kitörli a RefreshAreaCount-ot.
-		insert(new TaxiLocation($cell, $license, new Date($time),$averageOfInsertedForDelay.longValue() ));    	 
+		insert(new TaxiLocation($cell, $license, new Date($time),$insertedForDelay ));    	 
 		retract($ref);
 end
 
@@ -194,9 +190,6 @@ salience -2
 		//taxik számát (count), majd visszateszi a toplistába, végül kitörli a régebbit.
 		mostProfitableAreas.remove($area);
 		$area.decreaseCountOfTaxes();
-	//	$area.setLastInserted($newTlocation.getCurrentTime());
-	//	$area.setInsertedForDelay($insertedForDelay);
-	//	$area.setDelay(-1);
 		update($area);
 		mostProfitableAreas.add($area);
 		retract($oldTlocation);

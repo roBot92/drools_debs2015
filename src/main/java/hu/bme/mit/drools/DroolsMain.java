@@ -66,6 +66,7 @@ public class DroolsMain {
 		KieSessionConfiguration config = ks.newKieSessionConfiguration();
 		config.setOption(ClockTypeOption.get("pseudo"));
 		return kContainer.newKieSession("ksession-rules", config);
+		
 	}
 
 	public static void runTask(ToplistSetInterface toplist, String globalToplistVariableName, String fileName,

@@ -1,7 +1,7 @@
 
 //created on: 2017.03.29.
 package hu.bme.mit.entities
-/*
+
 
 
 
@@ -23,6 +23,7 @@ global hu.bme.mit.toplist.FrequentRoutesToplistSet mostFrequentRoutes
 declare TaxiLog 
 @role(event)
 @timestamp(dropoff_datetime)
+@expires( 31m )
 end
 
 declare Tick
@@ -35,8 +36,7 @@ end
 
 
 declare Route
-@role(event)
-@timestamp(lastDropoffTime)
+@role(fact)
 end
 
 
@@ -49,9 +49,9 @@ salience 2
 		retract($tlog);
 end
 
-//Az új TaxiLogokat feldolgozó szabály. Aktiválja az utat, (az aktiváló szabály akkor fut le, ha még nincs ilyen Route a WM-ban), illetve
-//beilleszt egy RefreshRoute eseményt, majd a processed flag-et beállítja, hogy többet ne fusson már a szabály az adott TaxiLog-ra.
-rule task1_newTaxiLogWithoutArea
+//Azokat az új TaxiLogokat feldolgozó szabály, amelyekhez tartozik út. Kitörli az utat a toplist-bõl, beállítja a megfelelõ értékeket,
+//megnöveli a frequency értékét, majd visszateszi a toplist-be. Végül a processed flag-et true-ra állítja.
+rule task1_newTaxiLogWithArea
 salience 1
 	when
 			$tlog:TaxiLog( !processed, $pickupCell: pickup_cell, $dropoffCell: dropoff_cell, $dropoffDate: dropoff_datetime, $inserted : inserted)
@@ -69,8 +69,10 @@ salience 1
 			update($tlog);
 end
 
-//Létrehoz egy új Route objektumot, ha talál ActivateRoute tényt, és nem talál Route megfelelõt
-rule task1_activateRoute
+//Az elõzõ szabályhoz hasonlóan az új TaxiLog-okra fut meg, de azokra, amelyekhez nem tartozik út.
+//Létrehozza az utat a megfelelõ értékekkel, majd hozzáadja a toplistához, végül processed = true-ra állítja a TaxiLog-ot,
+//és beilleszti a WM-be az új Route-ot.
+rule task1_newTaxiLogWithoutArea
 salience 0
 	when
 		$tlog:TaxiLog( !processed, $pickupCell: pickup_cell, $dropoffCell: dropoff_cell, $dropoffDate: dropoff_datetime, $inserted : inserted)
@@ -88,7 +90,9 @@ end
 
 
 
-//A szabály legyûjti azokat a TaxiLog-okat, amik 30 percnél régebbiek, létrehoz egy RefreshRoute eseményt rájuk, majd kitörli õket.
+//A szabály aktiválódik minden olyan TaxiLog-ra, ami már több, mint fél órával régebbi az aktuális Tick-nél.
+//Az adott TaxiLog-hoz tartozó útat törli a toplist-bõl, majd csökkenti a frequency-jét. Ha így már 0 a frequency, akkor kitörli a WM-bõl,
+//egyéb esetben visszateszi a toplist-be. A végén a TaxiLog törlõdik a WM-bõl.
 rule task1_removeTaxiLogsFromRoute 
 salience -1
 	when
@@ -118,4 +122,4 @@ end
 
 query "taxis"()
 	taxis: TaxiLog()
-end*/
+end
