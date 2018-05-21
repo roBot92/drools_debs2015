@@ -25,7 +25,7 @@ import hu.bme.mit.utility.DataFileParser;
 
 public class DataFileParserTest {
 
-	public static File TEST_CSV = new File("testCSV.csv");
+/*	public static File TEST_CSV = new File("testCSV.csv");
 	public static SimpleDateFormat DATEFORMAT = DataFileParser.SIMPLE_DATE_FORMAT;
 	public static String MEDALLION = "medallion";
 	public static String HACK_LICENSE = "hack_license";
@@ -139,5 +139,5 @@ public class DataFileParserTest {
 		
 		
 		
-	}
+	}*/
 }

@@ -248,7 +248,7 @@ public class FrequentRoutesToplistSet implements ToplistSetInterface{
 			}
 		}
 
-		return sum / counter;
+		return counter == 0 ? counter: sum / counter;
 	}
 
 	@Override
@@ -281,7 +281,7 @@ public class FrequentRoutesToplistSet implements ToplistSetInterface{
  * Egy Route elem delay mezõjének új értéke ekkor a rendszeridõ pillanatnyi értéke és a Route objektum insertedForDelay mezõjének az értékének a különbsége.<br>
  * route.delay = {@link java.lang.System#currentTimeInMillis()} - route.insertedForDelay
  * @see ToplistSetInterface#refreshDelayTimes()
- */
+ */ 
 	@Override
 	public void refreshDelayTimes() {
 		for(Route r : toplist){
@@ -306,6 +306,10 @@ public class FrequentRoutesToplistSet implements ToplistSetInterface{
 		toplist.clear();
 		routeMap.clear();
 		
+	}
+	
+	public Route getRoute(Cell startingCell, Cell dropoffCell){
+		return routeMap.get(new MultiKey(startingCell, dropoffCell));
 	}
 	
 }

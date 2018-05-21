@@ -1,7 +1,7 @@
 package hu.bme.mit.entities
 
 
-
+/*
 
 //list any import classes here.
 //import accumulate MedianAccumulateFunction medianf
@@ -61,7 +61,8 @@ end
 
 
 declare AreaWithProfit
-@role
+@role(event)
+@timestamp(lastInserted)
 end
 
 //Kidobjuk az érvénytelen TaxiLog-okat: hiányzik valamelyik cella, vagy viteldíj <=0 USD.
@@ -247,11 +248,8 @@ query "areas"  ()
       areas:AreaWithProfit()
 end
 
-query "taxis"()
-	taxis: TaxiLog()
-end
 
-query ticks()
+query Ticks()
 ticks:  Tick()
 end
 
@@ -277,3 +275,7 @@ end
 query AreaWithProfits()
 areas:AreaWithProfit()
 end
+
+query TaxiLogs()
+	tlogs: TaxiLog()
+end*/

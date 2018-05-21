@@ -49,5 +49,7 @@ public interface ToplistSetInterface {
 	 * @see java.util.Collection#clear()
 	 */
 	public void clear();
+	
+
 
 }

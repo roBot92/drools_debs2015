@@ -1,4 +1,4 @@
-package hu.bme.mit.drools;
+package hu.bme.mit.test.drools;
 
 import static org.junit.Assert.*;
 
@@ -34,42 +34,21 @@ public class Task1Test {
 	private static List<TaxiLog> route1tlogs;
 	private static List<TaxiLog> route2tlogs;
 	private static List<TaxiLog> route3tlogs;
-
+/*
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// calendar = Calendar.getInstance();
 		cells = Arrays.asList(new Cell(1, 1), new Cell(1, 2), new Cell(2, 1), new Cell(2, 2), new Cell(3, 1),
 				new Cell(3, 2));
 
-		route1tlogs = Arrays.asList(
-				setUpTaxilog(cells.get(0),
-						cells.get(1)/* , getZeroTimeCalendar() */),
-				setUpTaxilog(cells.get(0),
-						cells.get(1)/* , getZeroTimeCalendar() */),
-				setUpTaxilog(cells.get(0),
-						cells.get(1)/* , getZeroTimeCalendar() */),
-				setUpTaxilog(cells.get(0),
-						cells.get(1)/* , getZeroTimeCalendar() */));
+		route1tlogs = Arrays.asList(setUpTaxilog(cells.get(0), cells.get(1)), setUpTaxilog(cells.get(0), cells.get(1)),
+				setUpTaxilog(cells.get(0), cells.get(1)), setUpTaxilog(cells.get(0), cells.get(1)));
 
-		route2tlogs = Arrays.asList(
-				setUpTaxilog(cells.get(2),
-						cells.get(3)/* , getZeroTimeCalendar() */),
-				setUpTaxilog(cells.get(2),
-						cells.get(3)/* , getZeroTimeCalendar() */),
-				setUpTaxilog(cells.get(2),
-						cells.get(3)/* , getZeroTimeCalendar() */),
-				setUpTaxilog(cells.get(2),
-						cells.get(3)/* , getZeroTimeCalendar() */));
+		route2tlogs = Arrays.asList(setUpTaxilog(cells.get(2), cells.get(3)), setUpTaxilog(cells.get(2), cells.get(3)),
+				setUpTaxilog(cells.get(2), cells.get(3)), setUpTaxilog(cells.get(2), cells.get(3)));
 
-		route3tlogs = Arrays.asList(
-				setUpTaxilog(cells.get(4),
-						cells.get(5)/* , getZeroTimeCalendar() */),
-				setUpTaxilog(cells.get(4),
-						cells.get(5)/* , getZeroTimeCalendar() */),
-				setUpTaxilog(cells.get(4),
-						cells.get(5)/* , getZeroTimeCalendar() */),
-				setUpTaxilog(cells.get(4),
-						cells.get(5)/* , getZeroTimeCalendar() */));
+		route3tlogs = Arrays.asList(setUpTaxilog(cells.get(4), cells.get(5)), setUpTaxilog(cells.get(4), cells.get(5)),
+				setUpTaxilog(cells.get(4), cells.get(5)), setUpTaxilog(cells.get(4), cells.get(5)));
 
 	}
 
@@ -272,41 +251,43 @@ public class Task1Test {
 	public void test_inserttionAndDeletionAtTheSameTimeWithoutOverlap() {
 		List<TaxiLog> tlogs = Arrays.asList(setUpTaxilog(cells.get(0), cells.get(1)),
 				setUpTaxilog(cells.get(0), cells.get(1)), setUpTaxilog(cells.get(0), cells.get(1)));
-		Route route = new Route(tlogs.get(0).getPickup_cell(), tlogs.get(0).getDropoff_cell(), tlogs.get(0).getDropoff_datetime(), 2);
+		Route route = new Route(tlogs.get(0).getPickup_cell(), tlogs.get(0).getDropoff_cell(),
+				tlogs.get(0).getDropoff_datetime(), 2);
 		kSession.insert(tlogs.get(0));
 		kSession.insert(tlogs.get(1));
 		kSession.insert(new Tick(clock.getCurrentTime()));
 		kSession.fireAllRules();
 		assertTrue("check1", toplist.size() == 1 && toplist.get(0).valueEquals(route));
-		
+
 		clock.advanceTime(30, TimeUnit.MINUTES);
-		
+
 		kSession.insert(new Tick(clock.getCurrentTime()));
 		assertTrue("check2", toplist.size() == 1 && toplist.get(0).valueEquals(route));
-		
+
 		clock.advanceTime(1, TimeUnit.SECONDS);
 		tlogs.get(2).setDropoff_datetime(new Date(clock.getCurrentTime()));
 		kSession.insert(tlogs.get(2));
 		kSession.insert(new Tick(clock.getCurrentTime()));
 		kSession.fireAllRules();
-		
+
 		route.setFrequency(1);
 		route.setLastDropoffTime(tlogs.get(2).getDropoff_datetime());
-		assertTrue("check3", toplist.size() == 1 && toplist.get(0).valueEquals(route));		
-		
+		assertTrue("check3", toplist.size() == 1 && toplist.get(0).valueEquals(route));
+
 	}
-	
+
 	@Test
 	public void test_inserttionAndDeletionAtTheSameTimeWithOverlap() {
 		List<TaxiLog> tlogs = Arrays.asList(setUpTaxilog(cells.get(0), cells.get(1)),
 				setUpTaxilog(cells.get(0), cells.get(1)), setUpTaxilog(cells.get(0), cells.get(1)));
-		Route route = new Route(tlogs.get(0).getPickup_cell(), tlogs.get(0).getDropoff_cell(), tlogs.get(0).getDropoff_datetime(), 1);
+		Route route = new Route(tlogs.get(0).getPickup_cell(), tlogs.get(0).getDropoff_cell(),
+				tlogs.get(0).getDropoff_datetime(), 1);
 		kSession.insert(tlogs.get(0));
-		
+
 		kSession.insert(new Tick(clock.getCurrentTime()));
 		kSession.fireAllRules();
 		assertTrue("check1", toplist.size() == 1 && toplist.get(0).valueEquals(route));
-		
+
 		clock.advanceTime(1, TimeUnit.SECONDS);
 		tlogs.get(1).setDropoff_datetime(new Date(clock.getCurrentTime()));
 		route.setFrequency(2);
@@ -315,22 +296,22 @@ public class Task1Test {
 		kSession.insert(new Tick(clock.getCurrentTime()));
 		kSession.fireAllRules();
 		assertTrue("check2", toplist.size() == 1 && toplist.get(0).valueEquals(route));
-		
+
 		clock.advanceTime(30, TimeUnit.MINUTES);
 		kSession.insert(new Tick(clock.getCurrentTime()));
 		tlogs.get(2).setDropoff_datetime(new Date(clock.getCurrentTime()));
 		kSession.insert(tlogs.get(2));
 		kSession.fireAllRules();
-		
+
 		route.setLastDropoffTime(new Date(clock.getCurrentTime()));
 		assertTrue("check3", toplist.size() == 1 && toplist.get(0).valueEquals(route));
-		
+
 		clock.advanceTime(1, TimeUnit.SECONDS);
 		kSession.insert(new Tick(clock.getCurrentTime()));
 		kSession.fireAllRules();
 		route.setFrequency(1);
 		assertTrue("check3", toplist.size() == 1 && toplist.get(0).valueEquals(route));
-		
+
 	}
 
 	private Date getZeroTimeCalendar() {
@@ -338,5 +319,5 @@ public class Task1Test {
 		cal.setTimeInMillis(0);
 		return cal.getTime();
 	}
-
+*/
 }

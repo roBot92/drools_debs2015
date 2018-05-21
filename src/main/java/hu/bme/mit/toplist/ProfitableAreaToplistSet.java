@@ -11,11 +11,13 @@ import hu.bme.mit.entities.AreaWithProfit;
 import hu.bme.mit.positioning.Cell;
 
 /**
- * A DEBS2015 GrandChallenge második részfeladatához implementált osztály,
- * amely hu.bme.mit.entities.AreaWithProfit objektumokat tároló java.util.TreeSet és java.util.HashMap kollekciókat tart karban.
+ * A DEBS2015 GrandChallenge második részfeladatához implementált osztály, amely
+ * hu.bme.mit.entities.AreaWithProfit objektumokat tároló java.util.TreeSet és
+ * java.util.HashMap kollekciókat tart karban.
  * 
  * @author Rózsavölgyi Botond
- *	@see <a href="http://www.debs2015.org/call-grand-challenge.html">DEBS2015 Grand Challenge</a>
+ * @see <a href="http://www.debs2015.org/call-grand-challenge.html">DEBS2015
+ *      Grand Challenge</a>
  */
 public class ProfitableAreaToplistSet implements ToplistSetInterface {
 
@@ -127,8 +129,8 @@ public class ProfitableAreaToplistSet implements ToplistSetInterface {
 	/**
 	 * A {@link ProfitableAreaToplistSet#toplist} aktuális 'telítettségét' adja
 	 * vissza.<br>
-	 * Formálisan a min({@link FrequentRoutesToplistSet#MAX_ELEMENT_NUMBER},
-	 * {@link FrequentRoutesToplistSet#toplist}.size()) értékét.
+	 * Formálisan a min({@link ProfitableAreaToplistSet#MAX_ELEMENT_NUMBER},
+	 * {@link ProfitableAreaToplistSet#toplist}.size()) értékét.
 	 * 
 	 * @return
 	 */
@@ -321,7 +323,7 @@ public class ProfitableAreaToplistSet implements ToplistSetInterface {
 			}
 		}
 
-		return sum / counter;
+		return counter == 0 ? 0 : sum / counter;
 	}
 
 	@Override
@@ -350,11 +352,15 @@ public class ProfitableAreaToplistSet implements ToplistSetInterface {
 		return min;
 	}
 
-
 	/**
-	 * Frissíti a {@link ProfitableAreaToplistSet#toplist} AreaWithProfit elemeinek a delay mezõit, ha a jelenlegi értékük -1.<br>
-	 * Egy AreaWithProfit elem delay mezõjének új értéke ekkor a rendszeridõ pillanatnyi értékének és az AreaWithProfit objektum insertedForDelay mezõjének az értékének a különbsége lesz.<br>
-	 * area.delay = {@link java.lang.System#currentTimeInMillis()} - area.insertedForDelay
+	 * Frissíti a {@link ProfitableAreaToplistSet#toplist} AreaWithProfit
+	 * elemeinek a delay mezõit, ha a jelenlegi értékük -1.<br>
+	 * Egy AreaWithProfit elem delay mezõjének új értéke ekkor a rendszeridõ
+	 * pillanatnyi értékének és az AreaWithProfit objektum insertedForDelay
+	 * mezõjének az értékének a különbsége lesz.<br>
+	 * area.delay = {@link java.lang.System#currentTimeInMillis()} -
+	 * area.insertedForDelay
+	 * 
 	 * @see ToplistSetInterface#refreshDelayTimes()
 	 */
 	@Override
@@ -384,4 +390,14 @@ public class ProfitableAreaToplistSet implements ToplistSetInterface {
 
 	}
 
+	public AreaWithProfit getArea(Cell cell) {
+		return areaMap.get(cell);
+	}
+	/**
+	 * A {@link ProfitableAreaToplistSet#toplist} pillanatnyi elemszámát adja vissza.
+	 * @return
+	 */
+	public long getSetSize() {
+		return toplist.size();
+	}
 }
