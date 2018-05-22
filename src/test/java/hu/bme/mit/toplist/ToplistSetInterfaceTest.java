@@ -75,7 +75,7 @@ public abstract class ToplistSetInterfaceTest {
 	 * @param o
 	 *            - a toplista elem
 	 */
-	public abstract void addElementToList(Object o);
+	protected abstract void addElementToList(Object o);
 
 	/**
 	 * Adott toplista elemet paraméterben kapott késleltetéssel létrehozó
@@ -85,9 +85,9 @@ public abstract class ToplistSetInterfaceTest {
 	 *            - a késleltetés
 	 * @param cells
 	 *            - az elemet azonosító cellák.
-	 * @return - a ltérehozott listaelem
+	 * @return - a létrehozott listaelem
 	 */
-	public abstract Object setUpElementWithDelay(long delay, Cell... cells);
+	protected abstract Object setUpElementWithDelay(long delay, Cell... cells);
 
 	private long getAverage(long[] elements) {
 		long sum = 0;
@@ -369,5 +369,11 @@ public abstract class ToplistSetInterfaceTest {
 	 */
 	@Test
 	public abstract void testClear();
+	
+	/**
+	 * Ellenõrzi a késleltetési idõk frissítését, ha a delay -1, és ha nem. Elõbbi esetben kell frissíteni.
+	 */
+	@Test
+	public abstract void testRefreshDelayTimes();
 
 }

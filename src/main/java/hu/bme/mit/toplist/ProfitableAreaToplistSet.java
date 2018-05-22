@@ -245,7 +245,7 @@ public class ProfitableAreaToplistSet implements ToplistSetInterface {
 		}
 
 		area.setMedianProfit(median);
-		if (BigDecimal.ZERO.compareTo(area.getMedianProfitIndex()) == -1) {
+		if (BigDecimal.ZERO.compareTo(area.getMedianProfitIndex()) == -1 && area.getLastInserted() != null) {
 			toplist.add(area);
 		}
 
@@ -298,14 +298,14 @@ public class ProfitableAreaToplistSet implements ToplistSetInterface {
 	 */
 	public void decreaseAreaTaxiCount(Cell cell, Date lastInserted) {
 		AreaWithProfit area = removeByCell(cell);
-		if (area == null && cell != null) {
+		if (area == null) {
 			area = new AreaWithProfit(cell, lastInserted);
 			areaMap.put(cell, area);
 		} else if (lastInserted != null) {
 			area.setLastInserted(lastInserted);
 		}
 		area.decreaseCountOfTaxes();
-		if (BigDecimal.ZERO.compareTo(area.getMedianProfitIndex()) == -1) {
+		if (BigDecimal.ZERO.compareTo(area.getMedianProfitIndex()) == -1 && area.getLastInserted() != null) {
 			toplist.add(area);
 		}
 

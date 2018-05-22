@@ -19,7 +19,7 @@ public class FrequentRouteToplistSetTest extends ToplistSetInterfaceTest {
 	}
 
 	@Override
-	public Object setUpElementWithDelay(long delay, Cell... cells) {
+	protected Object setUpElementWithDelay(long delay, Cell... cells) {
 		
 		Route route = new Route(cells[0], cells[1], new Date(), 1);
 		route.setDelay(delay);
@@ -27,13 +27,13 @@ public class FrequentRouteToplistSetTest extends ToplistSetInterfaceTest {
 	}
 
 	@Override
-	public void addElementToList(Object o) {
+	protected void addElementToList(Object o) {
 		frToplist.add((Route)o);
 		
 	}
 
 	@Override
-	public Object getElementOfToplistSet(int index) {
+	protected Object getElementOfToplistSet(int index) {
 		return frToplist.get(index);
 	}
 
@@ -131,7 +131,9 @@ public class FrequentRouteToplistSetTest extends ToplistSetInterfaceTest {
 		}
 		return new Route(startingCell, endingCell, dropoffDate, frequency);
 	}
-	
+	/**
+	 * Ellenõrzi az index alapján lekérõ metódust, létezõ, és nem létezõ indexre.
+	 */
 	@Test
 	public void testGet(){
 		Route r1 = setUpRoute();
@@ -146,6 +148,9 @@ public class FrequentRouteToplistSetTest extends ToplistSetInterfaceTest {
 		assertTrue("3", frToplist.get(3) == null);
 	}
 	
+	/**
+	 * Ellenõrzi a {@link hu.bme.mit.toplist.FrequentRoutesToplistSet#size()} és a {@link hu.bme.mit.toplist.FrequentRoutesToplistSet#getSetSize()} metódusokat egyforma, és különbözõ értékû eredményre.
+	 */
 	@Test
 	public void testSize(){
 		assertTrue("1",frToplist.size() == 0 && frToplist.getSetSize() == frToplist.size());
@@ -162,6 +167,9 @@ public class FrequentRouteToplistSetTest extends ToplistSetInterfaceTest {
 		assertTrue("3",frToplist.size() == 10 && frToplist.getSetSize() == 20);
 	}
 	
+	/**
+	 * Ellenõrzi az objektum alapján törlést és a {@link hu.bme.mit.toplist.FrequentRoutesToplistSet#contains(Route)} függvényt létezõ és nem létezõ elemre.
+	 */
 	@Test
 	public void testRemoveAndContains(){
 		Route r = setUpRoute();
@@ -175,12 +183,192 @@ public class FrequentRouteToplistSetTest extends ToplistSetInterfaceTest {
 		assertTrue("3",frToplist.size() == 0 && !frToplist.contains(r) && result);
 		
 	}
-	
+	/**
+	 * Ellenõrzi a törlést cella alapján létezõ és nem létezõ elemre.
+	 */
 	@Test
 	public void testRemoveByCell(){
+		Route r = setUpRoute();
+		Route resultRoute = frToplist.remove(r.getPickup_cell(), r.getDropoff_cell());
+		assertFalse("1", resultRoute != null || frToplist.contains(r));
+		
+		frToplist.add(r);
+		assertTrue("2",frToplist.get(0) == r && frToplist.size() == 1 && frToplist.contains(r));
+		
+		resultRoute = frToplist.remove(r.getPickup_cell(), r.getDropoff_cell());
+		assertTrue("3",frToplist.size() == 0 && resultRoute == r);
+	}
+	/**
+	 * A {@link hu.bme.mit.toplist.FrequentRoutesToplistSet#refreshRoute(Cell, Cell, Date, long)} metódust ellenõrzi új Route objektummal.
+	 */
+	@Test
+	public void testRefreshRouteWithNewRoute(){
+		Route r = setUpRoute();
+		frToplist.refreshRoute(r.getPickup_cell(), r.getDropoff_cell(), r.getLastDropoffTime(), r.getFrequency());
+		
+		assertTrue(frToplist.size() == 1 && frToplist.get(0).equals(r));
+	}
+	
+	/**
+	 * A {@link hu.bme.mit.toplist.FrequentRoutesToplistSet#refreshRoute(Cell, Cell, Date, long)} metódust ellenõrzi már a listában lévõ Route objektummal.
+	 */
+	@Test
+	public void testRefreshRouteWithExistingRoute(){
+		Route r = setUpRoute();
+		frToplist.refreshRoute(r.getPickup_cell(), r.getDropoff_cell(), r.getLastDropoffTime(), r.getFrequency());
+		
+		Date newDropoffTime = new Date();
+		long newFrequency = 5;
+		
+		frToplist.refreshRoute(r.getPickup_cell(), r.getDropoff_cell(), newDropoffTime, newFrequency);
+		
+		r.setLastDropoffTime(newDropoffTime);
+		r.setFrequency(newFrequency);
+		assertTrue(frToplist.size() == 1 && frToplist.get(0).equals(r));
+	}
+	/**
+	 * A {@link hu.bme.mit.toplist.FrequentRoutesToplistSet#refreshRoute(Cell, Cell, Date, long)} metódust ellenõrzi új Route objektummal, érvénytelen adatokkal (frequency értéke 0 vagy a beillesztési idõ null)
+	 */
+	@Test
+	public void testRefreshRouteWithNewRouteInvalid(){
+		Route r = setUpRoute();
+		r.setLastDropoffTime(null);
+		
+		frToplist.refreshRoute(r.getPickup_cell(), r.getDropoff_cell(), r.getLastDropoffTime(), r.getFrequency());
+		
+		assertTrue("1", frToplist.size() == 0 && frToplist.getRoute(r.getPickup_cell(), r.getDropoff_cell()).equals(r));
+		
+		r.setLastDropoffTime(new Date());
+		r.setFrequency(0);
+		frToplist.refreshRoute(r.getPickup_cell(), r.getDropoff_cell(), r.getLastDropoffTime(), r.getFrequency());
+		assertTrue("2", frToplist.size() == 0 && frToplist.getRoute(r.getPickup_cell(), r.getDropoff_cell()).equals(r));
+		
+		r.setLastDropoffTime(null);
+		
+		assertTrue("3", frToplist.size() == 0 && frToplist.getRoute(r.getPickup_cell(), r.getDropoff_cell()).equals(r));
+	}
+	/**
+	 * A {@link hu.bme.mit.toplist.FrequentRoutesToplistSet#refreshRoute(Cell, Cell, Date, long)}metódust ellenõrzi már létezõ Route objektummal, érvénytelen adatokkal (frequency értéke 0 vagy a beillesztési idõ null)
+	 */
+	@Test
+	public void testRefreshRouteWithExistingRouteInvalidData(){
+		Route r = setUpRoute();
+		frToplist.add(r);
+		assertTrue("1", frToplist.size() == 1 && frToplist.get(0).equals(r));
+		
+		r.setLastDropoffTime(null);
+		frToplist.refreshRoute(r.getPickup_cell(), r.getDropoff_cell(), r.getLastDropoffTime(), r.getFrequency());
+		
+		assertTrue("2", frToplist.size() == 0 && frToplist.getRoute(r.getPickup_cell(), r.getDropoff_cell()).equals(r));
+		r.setLastDropoffTime(new Date());
+		r.setFrequency(0);
+		
+		frToplist.refreshRoute(r.getPickup_cell(), r.getDropoff_cell(), r.getLastDropoffTime(), r.getFrequency());
+		assertTrue("3", frToplist.size() == 0 && frToplist.getRoute(r.getPickup_cell(), r.getDropoff_cell()).equals(r));
+		
+		r.setLastDropoffTime(null);
+		frToplist.refreshRoute(r.getPickup_cell(), r.getDropoff_cell(), r.getLastDropoffTime(), r.getFrequency());
+		
+		assertTrue("4", frToplist.size() == 0 && frToplist.getRoute(r.getPickup_cell(), r.getDropoff_cell()).equals(r));
+		
 		
 	}
 	
+	/**
+	 * A {@link hu.bme.mit.toplist.FrequentRoutesToplistSet#decreaseRouteFrequency(Cell, Cell)} metódust ellenõrzi nem létezõ Route objektummal.
+	 */
+	@Test
+	public void testDecreaseRouteFrequencyNotExistingRoute(){
+		Cell[] cells= new Cell[]{getRandomCell(), getRandomCell()};
+		frToplist.decreaseRouteFrequency(cells[0], cells[1]);
+		assertTrue(frToplist.getSetSize() == 0 && frToplist.getRoute(cells[0], cells[1]) == null);
+	}
+	
+	/**
+	 * A {@link hu.bme.mit.toplist.FrequentRoutesToplistSet#decreaseRouteFrequency(Cell, Cell)} metódust ellenõrzi létezõ Route objektummal.
+	 */
+	@Test
+	public void testDecreaseRouteFrequencyExistingRoute(){
+		Route r = setUpRoute();
+		r.setFrequency(2);
+		frToplist.add(r);
+		assertTrue("1", frToplist.size() == 1 && frToplist.get(0).equals(r));
+		
+		frToplist.decreaseRouteFrequency(r.getPickup_cell(), r.getDropoff_cell());
+		r.decreaseFrequency();
+		assertTrue("2", frToplist.size() == 1 && frToplist.get(0).equals(r));
+		
+		frToplist.decreaseRouteFrequency(r.getPickup_cell(), r.getDropoff_cell());
+		
+		assertTrue("3", frToplist.size() == 0 && frToplist.getRoute(r.getPickup_cell(), r.getDropoff_cell()) == r);
+		
+	}
+	
+	/**
+	 * A {@link hu.bme.mit.toplist.FrequentRoutesToplistSet#contains(Route)} metódust ellenõrzi null értékkel.
+	 */
+	@Test
+	public void testContainsNull(){
+		assertFalse("1", frToplist.contains(null));
+		Route r = setUpRoute();
+		frToplist.add(r);
+		assertFalse("2", frToplist.contains(null));
+		
+		
+	}
+	
+	/**
+	 * Az {@link hu.bme.mit.toplist.FrequentRoutesToplistSet#increaseRouteFrequency(Cell, Cell, Date, long)} metódust ellenõrzi létezõ Route objektummal.
+	 */
+	@Test
+	public void testIncreaseFrequencyWithExistingRoute(){
+		Route r = setUpRoute();
+		frToplist.add(r);
+		
+		long frequency = r.getFrequency();
+		Date date = new Date();
+		frToplist.increaseRouteFrequency(r.getPickup_cell(), r.getDropoff_cell(), date, 100);
+		
+		assertTrue("1", r.getFrequency() == frequency+1 && r.getLastDropoffTime() == date && r.getInsertedForDelay() == 100);
+	}
+	
+	/**
+	 * Az {@link hu.bme.mit.toplist.FrequentRoutesToplistSet#increaseRouteFrequency(Cell, Cell, Date, long)} metódust ellenõrzi nem létezõ route objektummal.
+	 */
+	@Test
+	public void testIncreaseFrequencyWithoutExistingRoute(){
+		Route r = setUpRoute();
+		r.setFrequency(1);
+		frToplist.increaseRouteFrequency(r.getPickup_cell(), r.getDropoff_cell(), r.getLastDropoffTime(), 100);
+		
+		assertTrue("1", frToplist.size() == 1 && frToplist.get(0).equals(r));
+	}
 
+	@Override
+	public void testRefreshDelayTimes() {
+		frToplist.refreshDelayTimes();
+		assertTrue("1", frToplist.size() == 0);
+		
+		
+		Route r1 = setUpRoute();
+		r1.setDelay(-1);
+		Route r2 = setUpRoute();
+		r2.setDelay(Long.MAX_VALUE);
+		
+		long insertTime = System.currentTimeMillis();
+		
+		r1.setInsertedForDelay(insertTime);
+		frToplist.add(r1);
+		frToplist.add(r2);
+		
+		frToplist.refreshDelayTimes();
+		
+		long delay = r1.getDelay();
+		
+		assertTrue("1",r2.getDelay() == Long.MAX_VALUE);
+		assertTrue("2", delay >=0 && delay <= System.currentTimeMillis() - insertTime);
+		
+	}
+	
 
 }

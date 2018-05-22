@@ -6,14 +6,11 @@ public class Cell implements Comparable<Cell>{
 
 	private int x;
 	private int y;
-//	private Coordinate coordinate; // todo kidob?
-	
 
 	
 	public Cell(int x, int y) {
 		this.x = x;
 		this.y = y;
-//		this.coordinate = coordinate;
 	}
 	
 	int getX() {

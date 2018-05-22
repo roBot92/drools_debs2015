@@ -3,69 +3,432 @@ package hu.bme.mit.toplist;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 
+import org.junit.Test;
+
 import hu.bme.mit.entities.AreaWithProfit;
-import hu.bme.mit.entities.Route;
 import hu.bme.mit.positioning.Cell;
 
 public class ProfitableAreaToplistSetTest extends ToplistSetInterfaceTest {
 
 	protected ProfitableAreaToplistSet paToplist;
 
-
 	@Override
 	public void setUp() {
 		paToplist = new ProfitableAreaToplistSet();
 		toplist = paToplist;
-		
+
 	}
-	
 
 	@Override
 	public Object setUpElementWithDelay(long delay, Cell... cells) {
-		
-		AreaWithProfit area = new AreaWithProfit(cells[0],BigDecimal.valueOf(delay),new Date());
+
+		AreaWithProfit area = new AreaWithProfit(cells[0], BigDecimal.valueOf(delay), new Date());
 		area.setDelay(delay);
 		return area;
 	}
 
 	@Override
 	public void addElementToList(Object o) {
-		paToplist.add((AreaWithProfit)o);
-		
+		paToplist.add((AreaWithProfit) o);
+
 	}
 
 	@Override
-	public Object getElementOfToplistSet(int index) {
+	protected Object getElementOfToplistSet(int index) {
 		return paToplist.get(index);
 	}
 
 	@Override
-	public String toStringOfElement(Object o, boolean withoutDelay) {
-		return withoutDelay?((AreaWithProfit) o).toStringWithoutDelay() : ((AreaWithProfit) o).toString(); 
+	protected String toStringOfElement(Object o, boolean withoutDelay) {
+		return withoutDelay ? ((AreaWithProfit) o).toStringWithoutDelay() : ((AreaWithProfit) o).toString();
 	}
 
 	@Override
-	public long getInsertedForDelayOfElement(Cell... cells) {
+	protected long getInsertedForDelayOfElement(Cell... cells) {
 		AreaWithProfit a = paToplist.getArea(cells[0]);
-		return a == null? -1:a.getInsertedForDelay();
+		return a == null ? -1 : a.getInsertedForDelay();
 	}
 
 	@Override
 	public void testClear() {
 		Cell startingCell = super.getRandomCell();
-		
-		paToplist.add((AreaWithProfit)setUpElementWithDelay(1000, startingCell));
-		
-		assertTrue("size == 1",paToplist.getSetSize() == 1);
-		
+
+		paToplist.add((AreaWithProfit) setUpElementWithDelay(1000, startingCell));
+
+		assertTrue("size == 1", paToplist.getSetSize() == 1);
+
 		paToplist.clear();
+
+		assertTrue("size == 0", paToplist.getSetSize() == 0 && paToplist.getArea(startingCell) == null);
+
+	}
+
+	@Override
+	public void testRefreshDelayTimes() {
+		paToplist.refreshDelayTimes();
+		assertTrue("1", paToplist.size() == 0);
+
+		AreaWithProfit a1 = setUpArea();
+		a1.setDelay(-1);
+		AreaWithProfit a2 = setUpArea();
+		a2.setDelay(Long.MAX_VALUE);
+
+		long insertTime = System.currentTimeMillis();
+		a1.setInsertedForDelay(insertTime);
+		paToplist.add(a1);
+		paToplist.add(a2);
+
+		paToplist.refreshDelayTimes();
+
+		long delay = a1.getDelay();
+
+		assertTrue("1", a2.getDelay() == Long.MAX_VALUE);
+		assertTrue("2", delay >= 0 && delay <= System.currentTimeMillis() - insertTime);
+
+	}
+
+	private AreaWithProfit setUpArea() {
+		return setUpArea(null, null, null);
+	}
+
+	private AreaWithProfit setUpArea(Cell cell, BigDecimal medianProfitIndex, Date lastInserted) {
+		if (cell == null) {
+			cell = getRandomCell();
+		}
+		if (medianProfitIndex == null) {
+			medianProfitIndex = BigDecimal.ONE;
+		}
+		if (lastInserted == null) {
+			lastInserted = new Date();
+		}
+
+		AreaWithProfit area = new AreaWithProfit(cell, medianProfitIndex, lastInserted);
+		area.setMedianProfit(area.getMedianProfitIndex());
+		return area;
+	}
+
+	/**
+	 * A {@link hu.bme.mit.toplist.ProfitableAreaToplistSet#add(AreaWithProfit)} metódust teszteli null értékkel. 
+	 */
+	@Test
+	public void testAddNull() {
+		assertTrue(paToplist.isEmpty() && paToplist.size() == 0);
+		paToplist.add(null);
+
+		assertTrue(paToplist.isEmpty() && paToplist.size() == 0);
+
+	}
+
+	/**
+	 * A {@link hu.bme.mit.toplist.ProfitableAreaToplistSet#get(int)} metódust teszteli létezõ és nem létezõ indexekkel.
+	 */
+	@Test
+	public void testGet() {
+		AreaWithProfit a1 = setUpArea();
+		AreaWithProfit a2 = setUpArea();
+		a1.setMedianProfitIndex(BigDecimal.TEN.add(BigDecimal.ONE));
+
+		paToplist.add(a1);
+		paToplist.add(a2);
+
+		assertTrue("1", paToplist.get(0) == a1);
+		assertTrue("2", paToplist.get(1) == a2);
+		assertTrue("3", paToplist.get(3) == null);
+	}
+
+	/**
+	 * A {@link hu.bme.mit.toplist.ProfitableAreaToplistSet#getMinDelay()} metódust teszteli, ha van negatív érték a késleltetések között.
+	 */
+	@Test
+	public void testGetMinDelayWithMinus() {
+		AreaWithProfit a1 = setUpArea();
+		AreaWithProfit a2 = setUpArea();
+		AreaWithProfit a3 = setUpArea();
+
+		a1.setDelay(1);
+		a2.setDelay(-1);
+		a3.setDelay(2);
+
+		paToplist.add(a1);
+		paToplist.add(a2);
+		paToplist.add(a3);
+
+		assertTrue(toplist.getMinDelay() == 1);
+	}
+
+	/**
+	 * A {@link hu.bme.mit.toplist.ProfitableAreaToplistSet#getSetSize()} és a {@link hu.bme.mit.toplist.ProfitableAreaToplistSet#size()} 
+	 * metódusok tesztelése üres listával, 10 elemû listával és 20 elemû listával.
+	 */
+	@Test
+	public void testSize() {
+		assertTrue("1", paToplist.size() == 0 && paToplist.getSetSize() == paToplist.size());
+
+		for (int i = 0; i < 10; i++) {
+			paToplist.add(setUpArea());
+		}
+		assertTrue("2", paToplist.size() == 10 && paToplist.getSetSize() == paToplist.size());
+
+		for (int i = 0; i < 10; i++) {
+			paToplist.add(setUpArea());
+		}
+
+		assertTrue("3", paToplist.size() == 10 && paToplist.getSetSize() == 20);
+	}
+
+	/**
+	 * A {@link hu.bme.mit.toplist.ProfitableAreaToplistSet#remove(AreaWithProfit)} metódust ellenõrzi a listában levõ objektummal, a listában
+	 * nem levõ objektummal, illetve null értékkel. 
+	 */
+	@Test
+	public void testRemove() {
+
+		paToplist.remove(null);
+		assertTrue("1", paToplist.size() == 0);
+		AreaWithProfit a = setUpArea();
+		assertTrue("2", paToplist.size() == 0 && paToplist.getArea(a.getCell()) == null);
+
+		paToplist.add(a);
+		assertTrue("3", paToplist.get(0) == a && paToplist.size() == 1 && paToplist.getArea(a.getCell()) == a);
+
+		paToplist.remove(a);
+		assertTrue("4", paToplist.size() == 0 && paToplist.get(0) == null && paToplist.getArea(a.getCell()) == a);
+
+	}
+
+	/**
+	 * A {@link hu.bme.mit.toplist.ProfitableAreaToplistSet#removeByCell(Cell)}  metódus ellenõrzi a listában lévõ objektummal, a listában
+	 * nem levõ objektummal, illetve null értékkel. 
+	 */
+	@Test
+	public void testRemoveByCell() {
+		AreaWithProfit a = setUpArea();
+		AreaWithProfit resultArea = paToplist.removeByCell(a.getCell());
+		assertTrue("1", resultArea == null && paToplist.size() == 0 && paToplist.getArea(a.getCell()) == null);
+
+		paToplist.add(a);
+		assertTrue("2", paToplist.get(0) == a && paToplist.size() == 1 && paToplist.getArea(a.getCell()) == a);
+
+		resultArea = paToplist.removeByCell(a.getCell());
+		assertTrue("3", paToplist.size() == 0 && resultArea == a && paToplist.getArea(a.getCell()) == a);
+	}
+
+	/**
+	 * A {@link hu.bme.mit.toplist.ProfitableAreaToplistSet#refreshAreaTaxiCount(Cell, Date, long)} metódust ellenõrzi a 
+	 * a listában még nem létezõ objektummal.
+	 */
+	@Test
+	public void testRefreshAreaTaxiCountWithoutExistingArea() {
+		Cell cell = getRandomCell();
+		Date date = new Date();
+		long count = 1;
+		paToplist.refreshAreaTaxiCount(cell, date, count);
+
+		AreaWithProfit area = paToplist.getArea(cell);
+		assertTrue("1",
+				paToplist.size() == 0 && area != null && area.getMedianProfitIndex().compareTo(BigDecimal.ZERO) == 0
+						&& area.getCountOfTaxes() == count && area.getLastInserted().equals(date));
+
+		count = 2;
+		paToplist.refreshAreaTaxiCount(cell, null, count);
+		assertTrue("2",
+				paToplist.size() == 0 && area != null && area.getMedianProfitIndex().compareTo(BigDecimal.ZERO) == 0
+						&& area.getCountOfTaxes() == count && area.getLastInserted().equals(date));
+
+		count = 4;
+		Date prevDate = new Date(area.getLastInserted().getTime() - 10000l);
+		paToplist.refreshAreaTaxiCount(cell, prevDate, count);
+
+		assertTrue("3",
+				paToplist.size() == 0 && area != null && area.getMedianProfitIndex().compareTo(BigDecimal.ZERO) == 0
+						&& area.getCountOfTaxes() == count && area.getLastInserted().equals(date));
+
+		Date newDate = new Date(date.getTime() + 1);
+		paToplist.refreshAreaTaxiCount(cell, newDate, count);
+
+		assertTrue("4",
+				paToplist.size() == 0 && area != null && area.getMedianProfitIndex().compareTo(BigDecimal.ZERO) == 0
+						&& area.getCountOfTaxes() == count && area.getLastInserted().equals(newDate));
+
+		area.setLastInserted(null);
+
+		count = 10;
+		paToplist.refreshAreaTaxiCount(cell, newDate, count);
+		assertTrue("5",
+				paToplist.size() == 0 && area != null && area.getMedianProfitIndex().compareTo(BigDecimal.ZERO) == 0
+						&& area.getCountOfTaxes() == count && area.getLastInserted().equals(newDate));
+
+	}
+
+	/**
+	 *  A {@link hu.bme.mit.toplist.ProfitableAreaToplistSet#refreshAreaTaxiCount(Cell, Date, long)} metódust ellenõrzi a listában
+	 *  már létezõ objektummal.
+	 */
+	@Test
+	public void testRefreshAreaTaxiCountWithExistingArea() {
+		AreaWithProfit a = setUpArea();
+		long originalCount = 1;
+		a.setCountOfTaxes(originalCount);
+		BigDecimal originalMedianProfitIndex = a.getMedianProfitIndex();
+		paToplist.add(a);
+
+		assertTrue("1", paToplist.size() == 1 && paToplist.getArea(a.getCell()) == a);
+
+		Date date = new Date();
+		long newCount = originalCount * 2;
+		BigDecimal newMedianProfitIndex = originalMedianProfitIndex.divide(BigDecimal.valueOf(2), 2,
+				RoundingMode.HALF_UP);
+
+		paToplist.refreshAreaTaxiCount(a.getCell(), date, newCount);
+
+		assertTrue("2", paToplist.size() == 1 && a.getCountOfTaxes() == newCount
+				&& a.getMedianProfitIndex().compareTo(newMedianProfitIndex) == 0);
+	}
+
+	/**
+	 * A {@link hu.bme.mit.toplist.ProfitableAreaToplistSet#increaseAreaTaxiCount(Cell, Date)} metódust ellenõrzi létezõ Area objektummal.
+	 */
+	@Test
+	public void testIncreaseAreaTaxiCountWithExistingArea() {
+		AreaWithProfit a = setUpArea();
+		paToplist.add(a);
+		assertTrue("1", paToplist.size() == 1 && paToplist.get(0) == a);
+
+		long originalCount = a.getCountOfTaxes();
+		BigDecimal originalMedianProfitIndex = a.getMedianProfitIndex();
+		Date originalDate = a.getLastInserted();
+
+		paToplist.increaseAreaTaxiCount(a.getCell(), null);
+		assertTrue("2",
+				a.getCountOfTaxes() == originalCount + 1 && paToplist.size() == 1
+						&& a.getLastInserted().equals(originalDate)
+						&& a.getMedianProfitIndex().compareTo(originalMedianProfitIndex) == 0);
+
+		Date newDate = new Date(originalDate.getTime() + 10000l);
+		paToplist.increaseAreaTaxiCount(a.getCell(), newDate);
+
+		assertTrue("3",
+				a.getCountOfTaxes() == originalCount + 2 && paToplist.size() == 1 && a.getLastInserted().equals(newDate)
+						&& a.getMedianProfitIndex().compareTo(
+								originalMedianProfitIndex.divide(BigDecimal.valueOf(2), 2, RoundingMode.HALF_UP)) == 0);
+
+	}
+
+	/**
+	 * A {@link hu.bme.mit.toplist.ProfitableAreaToplistSet#increaseAreaTaxiCount(Cell, Date)} metódust ellenõrzi még nem létezõ Area objektummal.
+	 */
+	@Test
+	public void testIncreaseAreaTaxiCountWithoutExistingArea() {
 		
-		assertTrue("size == 0",paToplist.getSetSize() == 0 && paToplist.getArea(startingCell) == null);
+
+		long originalCount = 1;
+		Date originalDate = new Date();
+		Cell cell = getRandomCell();
+
+		paToplist.increaseAreaTaxiCount(cell, originalDate);
+		AreaWithProfit a = paToplist.getArea(cell);
+		assertTrue("1", a!= null &&	a.getCountOfTaxes() == originalCount && paToplist.size() == 0 && a.getMedianProfitIndex().compareTo(BigDecimal.ZERO) == 0);
+
+		paToplist.increaseAreaTaxiCount(cell, null);
+		assertTrue("2", a!= null &&	a.getCountOfTaxes() == originalCount+1 && paToplist.size() == 0 && a.getMedianProfitIndex().compareTo(BigDecimal.ZERO) == 0);
+		
+	}
+	/**
+	 * A {@link hu.bme.mit.toplist.ProfitableAreaToplistSet#decreaseAreaTaxiCount(Cell, Date)} metódust ellenõrzi a listában már létezõ objektummal.
+	 */
+	@Test
+	public void testDecreaseAreaTaxiCountWithExistingArea(){
+		AreaWithProfit a = setUpArea();
+		Date originalDate = a.getLastInserted();
+		a.setCountOfTaxes(2);
+		
+		paToplist.add(a);
+		
+		assertTrue("1", paToplist.get(0) == a && a.getMedianProfitIndex().compareTo(BigDecimal.valueOf(0.5)) == 0);
+		
+		paToplist.decreaseAreaTaxiCount(a.getCell(), null);
+		assertTrue("2", paToplist.get(0) == a && a.getMedianProfitIndex().compareTo(BigDecimal.valueOf(1)) == 0 && a.getLastInserted().equals(originalDate) && a.getCountOfTaxes() == 1);
+		
+		Date newDate = new Date(originalDate.getTime() + 10000l);
+		paToplist.decreaseAreaTaxiCount(a.getCell(), newDate);
+		
+		assertTrue("3", paToplist.get(0) == a && a.getMedianProfitIndex().compareTo(BigDecimal.valueOf(1)) == 0 && a.getLastInserted().equals(newDate) && a.getCountOfTaxes() == 0);
 		
 		
 	}
-
+	
+	/**
+	 * A {@link hu.bme.mit.toplist.ProfitableAreaToplistSet#decreaseAreaTaxiCount(Cell, Date)} metódust ellenõrzi a listában még nem létezõ objektummal.
+	 */
+	@Test
+	public void testDecreaseAreaTaxiCountWithoutExistingArea(){
+		Cell cell = getRandomCell();
+		
+		paToplist.decreaseAreaTaxiCount(cell, null);
+		AreaWithProfit a = paToplist.getArea(cell);
+		assertTrue("1", paToplist.size() == 0 && a != null && a.getMedianProfitIndex().compareTo(BigDecimal.ZERO)==0 && a.getLastInserted() == null);
+		
+		Date date = new Date();
+		paToplist.decreaseAreaTaxiCount(cell, date);
+		assertTrue("2", paToplist.size() == 0 && a != null && a.getLastInserted() != null && a.getCountOfTaxes() == -2);
+		
+	}
+	
+	/**
+	 * A {@link hu.bme.mit.toplist.ProfitableAreaToplistSet#refreshAreaMedian(Cell, Date, BigDecimal)} metódust ellenõrzi a listában már létezõ objektummal.
+	 */
+	@Test
+	public void testRefreshAreaMedianWithExistingArea(){
+		AreaWithProfit a = setUpArea();
+		Date originalDate = a.getLastInserted();
+		paToplist.add(a);
+		assertTrue("1", paToplist.get(0) == a && paToplist.size() == 1);
+		
+		BigDecimal newMedian = BigDecimal.valueOf(100);
+		
+		paToplist.refreshAreaMedian(a.getCell(), null, newMedian);
+		
+		assertTrue("2", paToplist.get(0) == a && a.getMedianProfit().compareTo(newMedian) == 0 && a.getLastInserted().equals(originalDate));
+		
+		newMedian = newMedian.multiply(BigDecimal.TEN);
+		Date newDate = new Date(originalDate.getTime() + 10000l);
+		paToplist.refreshAreaMedian(a.getCell(), newDate, newMedian);
+		
+		assertTrue("3", paToplist.get(0) == a && a.getMedianProfit().compareTo(newMedian) == 0 && a.getLastInserted().equals(newDate));	
+		
+	}
+	/**
+	 * A {@link hu.bme.mit.toplist.ProfitableAreaToplistSet#refreshAreaMedian(Cell, Date, BigDecimal)} metódust ellenõrzi a listában még nem létezõ objektummal.
+	 */
+	@Test
+	public void testRefreshAreaMedianWithoutExistingArea(){
+		Cell cell = getRandomCell();
+		BigDecimal median = BigDecimal.valueOf(100);
+		Date date = new Date();
+		
+		paToplist.refreshAreaMedian(cell, null, median);
+		AreaWithProfit a = paToplist.getArea(cell);
+		
+		assertTrue("1", paToplist.size() == 0 && a != null && a.getMedianProfit().compareTo(median) == 0);
+		
+		median = median.multiply(BigDecimal.valueOf(2));
+		
+		paToplist.refreshAreaMedian(cell, date, median);
+		
+		assertTrue("2", paToplist.size() == 1 && a.getMedianProfit().compareTo(median) == 0 && a.getLastInserted().equals(date));	
+		
+		median = BigDecimal.ZERO;
+		paToplist.refreshAreaMedian(cell, date, median);
+		assertTrue("3", paToplist.size() == 0 && paToplist.getArea(cell) != null && a.getMedianProfit().compareTo(median) == 0);
+		
+		Date previousDate = new Date(date.getTime() - 10000l);
+		paToplist.refreshAreaMedian(cell, previousDate, median);
+		
+		assertTrue("4", paToplist.size() == 0 && paToplist.getArea(cell) != null && a.getLastInserted().equals(date));
+		
+	}
 
 }
