@@ -11,7 +11,6 @@ import java.util.Date;
 import org.junit.Test;
 
 import hu.bme.mit.entities.AreaWithProfit;
-import hu.bme.mit.entities.Route;
 import hu.bme.mit.positioning.Cell;
 
 /**

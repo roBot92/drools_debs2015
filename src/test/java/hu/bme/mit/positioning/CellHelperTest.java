@@ -21,7 +21,7 @@ public class CellHelperTest {
 
 	private CellHelper cellHelper;
 	
-/*	@Before
+	@Before
 	public void setUp() throws Exception {
 		cellHelper = new CellHelper(BigDecimal.valueOf(-10), BigDecimal.TEN, BigDecimal.ONE, BigDecimal.ONE, 10);
 
@@ -64,6 +64,6 @@ public class CellHelperTest {
 		}
 		
 
-	}*/
+	}
 
 }

@@ -9,7 +9,6 @@ import java.util.function.Function;
 import org.junit.Before;
 import org.junit.Test;
 
-import hu.bme.mit.entities.AreaWithProfit;
 import hu.bme.mit.positioning.Cell;
 import hu.bme.mit.toplist.ToplistSetInterface;
 
