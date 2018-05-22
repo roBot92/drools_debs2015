@@ -1,5 +1,6 @@
 package hu.bme.mit.toplist;
 
+import java.util.Calendar;
 import java.util.Date;
 
 import org.junit.Test;
@@ -7,6 +8,11 @@ import org.junit.Test;
 import hu.bme.mit.entities.Route;
 import hu.bme.mit.positioning.Cell;
 import static org.junit.Assert.*;
+/**
+ * A {@link hu.bme.mit.toplist.FrequentRoutesToplistSet} osztályhoz készült egységtesztelõ osztály.
+ * @author Rózsavölgyi Botond
+ *
+ */
 public class FrequentRouteToplistSetTest extends ToplistSetInterfaceTest {
 
 	protected FrequentRoutesToplistSet frToplist;
@@ -370,5 +376,156 @@ public class FrequentRouteToplistSetTest extends ToplistSetInterfaceTest {
 		
 	}
 	
-
+	/**
+	 * Ellenõrzi a frequency mezõ alapján a rendezést két elem esetén.
+	 */
+	@Test
+	public void testOrderingByFrequencyWithTwoElements(){
+		Route r1 = setUpRoute();
+		Route r2 = setUpRoute();
+		
+		r1.setFrequency(2);
+		r2.setFrequency(3);
+		
+		frToplist.add(r1);
+		assertTrue("1",frToplist.size() == 1 && frToplist.get(0) == r1);
+		
+		frToplist.add(r2);
+		assertTrue("2",frToplist.size() == 2 && frToplist.get(0) == r2 && frToplist.get(1) == r1);
+		
+		frToplist.increaseRouteFrequency(r1.getPickup_cell(), r1.getDropoff_cell(), r1.getLastDropoffTime(), -1);
+		frToplist.increaseRouteFrequency(r1.getPickup_cell(), r1.getDropoff_cell(), r1.getLastDropoffTime(), -1);
+		assertTrue("3",frToplist.size() == 2 && frToplist.get(0) == r1 && frToplist.get(1) == r2);
+		frToplist.remove(r1);
+		assertTrue("4",frToplist.size() == 1 && frToplist.get(0) == r2);		
+	}
+	/**
+	 * Ellenõrzi a frequency mezõ alapján a rendezést 20 elem esetén.
+	 */
+	@Test
+	public void testOrderingByFrequencyWith20Elements(){
+		
+		for(int i = 0; i < 20; i++){
+			Route r = setUpRoute();
+			r.setFrequency((long)(Math.random()*1000l+1));
+			frToplist.add(r);
+		}
+		assertTrue("1",frToplist.size() == FrequentRoutesToplistSet.MAX_ELEMENT_NUMBER && frToplist.getSetSize() == 20);
+		
+		long frequency = Long.MAX_VALUE;
+		for(int i = 0; i < 20; i++){
+			assertTrue(i+". iteration", frequency >= frToplist.get(i).getFrequency());
+			frequency = frToplist.get(i).getFrequency();
+		}
+		
+		Route routeOfMinFreq = frToplist.get(19);
+		long diffBetweenMinAndMax = frToplist.get(0).getFrequency() - routeOfMinFreq.getFrequency();
+		
+		for(int i = 0; i< diffBetweenMinAndMax-1;i++){
+			frToplist.increaseRouteFrequency(routeOfMinFreq.getPickup_cell(), routeOfMinFreq.getDropoff_cell(), routeOfMinFreq.getLastDropoffTime(),-1);
+		}
+		assertFalse("2",frToplist.get(0) == routeOfMinFreq);
+		frToplist.increaseRouteFrequency(routeOfMinFreq.getPickup_cell(), routeOfMinFreq.getDropoff_cell(), routeOfMinFreq.getLastDropoffTime(),-1);
+		frToplist.increaseRouteFrequency(routeOfMinFreq.getPickup_cell(), routeOfMinFreq.getDropoff_cell(), routeOfMinFreq.getLastDropoffTime(),-1);
+		assertTrue("3",frToplist.get(0) == routeOfMinFreq);
+	}
+	/**
+	 * Ellenõrzi a lastDropoffTime mezõ szerinti rendezést két elem esetén.
+	 */
+	@Test
+	public void testOrderingByLastDropoffTimeWithTwoElements(){
+		Route r1 = setUpRoute();
+		Route r2 = setUpRoute();
+		Calendar calendar = Calendar.getInstance();
+		r1.setLastDropoffTime(calendar.getTime());
+		calendar.add(Calendar.SECOND, 1);
+		r2.setLastDropoffTime(calendar.getTime());
+		
+		
+		frToplist.add(r1);
+		assertTrue("1",frToplist.size() == 1 && frToplist.get(0) == r1);
+		
+		frToplist.add(r2);
+		assertTrue("2",frToplist.size() == 2 && frToplist.get(0) == r2 && frToplist.get(1) == r1);
+		
+		
+		calendar.add(Calendar.SECOND, 1);
+		frToplist.remove(r1);
+		r1.setLastDropoffTime(calendar.getTime());
+		frToplist.add(r1);
+		
+		assertTrue("3",frToplist.size() == 2 && frToplist.get(0) == r1 && frToplist.get(1) == r2);
+		frToplist.remove(r1);
+		assertTrue("4",frToplist.size() == 1 && frToplist.get(0) == r2);		
+	}
+	
+	/**
+	 * Ellenõrzi a lastDropoffTime mezõ szerinti rendezést 20 elem esetén.
+	 */
+	@Test
+	public void testOrderingByLastDropoffTimeWith20Elements(){
+		Calendar calendar = Calendar.getInstance();
+		for(int i = 0; i < 20; i++){
+			Route r = setUpRoute();
+			r.setLastDropoffTime(calendar.getTime());
+			frToplist.add(r);
+			
+			calendar.add(Calendar.SECOND, (int) (Math.random()*100l-50));
+		}
+		assertTrue("1",frToplist.size() == FrequentRoutesToplistSet.MAX_ELEMENT_NUMBER && frToplist.getSetSize() == 20);
+		
+		Date date = frToplist.get(0).getLastDropoffTime();
+		for(int i = 0; i < 20; i++){
+			assertTrue(i+". iteration", date.getTime() >= frToplist.get(i).getLastDropoffTime().getTime());
+			date = frToplist.get(i).getLastDropoffTime();
+		}
+		
+		Route routeOfMinDate = frToplist.get(19);
+		long diffBetweenMinAndMaxInSec = frToplist.get(0).getLastDropoffTime().getTime() - routeOfMinDate.getLastDropoffTime().getTime();
+		
+		calendar.setTime(routeOfMinDate.getLastDropoffTime());
+		for(int i = 0; i< diffBetweenMinAndMaxInSec-1000;i+=1000){
+			calendar.add(Calendar.SECOND, 1);
+			frToplist.remove(routeOfMinDate);
+			routeOfMinDate.setLastDropoffTime(calendar.getTime());
+			frToplist.add(routeOfMinDate);
+		}
+		assertFalse("2",frToplist.get(0) == routeOfMinDate);
+		calendar.add(Calendar.SECOND, 1);
+		frToplist.remove(routeOfMinDate);
+		routeOfMinDate.setLastDropoffTime(new Date(calendar.getTimeInMillis()+1000));
+		frToplist.add(routeOfMinDate);
+		
+		assertTrue("3",frToplist.get(0) == routeOfMinDate);	
+	}
+	
+	/**
+	 * Ellenõrzi, hogy a frequency és lastDropoffTime különbözõség esetén a frequency az elsõdleges.
+	 */
+	@Test
+	public void testOrderingByFrequencyAndLastDropoffTimeWithTwoElements(){
+		Route r1 = setUpRoute();
+		Route r2 = setUpRoute();
+		r1.setFrequency(2);
+		r2.setFrequency(2);
+		
+		Calendar calendar = Calendar.getInstance();
+		r1.setLastDropoffTime(calendar.getTime());
+		calendar.add(Calendar.SECOND, 1);
+		r2.setLastDropoffTime(calendar.getTime());
+		
+		frToplist.add(r1);
+		frToplist.add(r2);
+		
+		assertTrue("1",frToplist.get(0) == r2 && frToplist.get(1) == r1);
+		
+		frToplist.increaseRouteFrequency(r1.getPickup_cell(), r1.getDropoff_cell(), r1.getLastDropoffTime(), -1);
+		assertTrue("2",frToplist.get(0) == r1 && frToplist.get(1) == r2);
+		
+		frToplist.increaseRouteFrequency(r2.getPickup_cell(), r2.getDropoff_cell(), r2.getLastDropoffTime(), -1);
+		assertTrue("3",frToplist.get(0) == r2 && frToplist.get(1) == r1);
+		
+		
+		
+	}
 }

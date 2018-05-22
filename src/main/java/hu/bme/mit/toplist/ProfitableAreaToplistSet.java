@@ -154,7 +154,7 @@ public class ProfitableAreaToplistSet implements ToplistSetInterface {
 	 * A {@link ProfitableAreaToplistSet#toplist} üres -e.
 	 * 
 	 * @return
-	 * @see java.util.Collections#isEmpty()
+	 * @see java.util.Set#isEmpty()
 	 */
 	public boolean isEmpty() {
 		return toplist.isEmpty();
@@ -358,7 +358,7 @@ public class ProfitableAreaToplistSet implements ToplistSetInterface {
 	 * Egy AreaWithProfit elem delay mezõjének új értéke ekkor a rendszeridõ
 	 * pillanatnyi értékének és az AreaWithProfit objektum insertedForDelay
 	 * mezõjének az értékének a különbsége lesz.<br>
-	 * area.delay = {@link java.lang.System#currentTimeInMillis()} -
+	 * area.delay = {@link java.lang.System#currentTimeMillis()} -
 	 * area.insertedForDelay
 	 * 
 	 * @see ToplistSetInterface#refreshDelayTimes()

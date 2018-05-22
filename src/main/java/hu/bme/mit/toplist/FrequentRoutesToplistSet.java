@@ -279,7 +279,7 @@ public class FrequentRoutesToplistSet implements ToplistSetInterface{
 /**
  * Frissíti a {@link FrequentRoutesToplistSet#toplist} Route elemeinek a delay mezõit, ha a jelenlegi értékük -1.<br>
  * Egy Route elem delay mezõjének új értéke ekkor a rendszeridõ pillanatnyi értéke és a Route objektum insertedForDelay mezõjének az értékének a különbsége.<br>
- * route.delay = {@link java.lang.System#currentTimeInMillis()} - route.insertedForDelay
+ * route.delay = {@link java.lang.System#currentTimeMillis()} - route.insertedForDelay
  * @see ToplistSetInterface#refreshDelayTimes()
  */ 
 	@Override
