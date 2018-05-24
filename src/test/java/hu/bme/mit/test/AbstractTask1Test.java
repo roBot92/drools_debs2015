@@ -223,7 +223,6 @@ public abstract class AbstractTask1Test {
 		insertTaxiLogs(tlogs.subList(0, 20));
 		rollPseudoClock(0);
 		fireRules();
-		// System.out.println("sliding first: "+toplist);
 
 		assertTrue("check1", toplist.size() == 10 && toplist.getSetSize() == 10);
 		rollPseudoClock(15*60*1000);

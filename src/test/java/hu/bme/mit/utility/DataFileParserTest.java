@@ -25,7 +25,7 @@ import hu.bme.mit.utility.DataFileParser;
 
 public class DataFileParserTest {
 
-/*	public static File TEST_CSV = new File("testCSV.csv");
+	public static File TEST_CSV = new File("testCSV.csv");
 	public static SimpleDateFormat DATEFORMAT = DataFileParser.SIMPLE_DATE_FORMAT;
 	public static String MEDALLION = "medallion";
 	public static String HACK_LICENSE = "hack_license";
@@ -130,14 +130,8 @@ public class DataFileParserTest {
 
 	@Test
 	public void testParseCSVIntoTaxiLogListStringStringIntIntCellHelperInt() throws FileNotFoundException {
-		List<TaxiLog> result = DataFileParser.parseCSVIntoTaxiLogList(TEST_CSV.getName(), SEPARATOR, COLUMNCOUNT, cellHelper);
+		List<TaxiLog> result = DataFileParser.parseCSVIntoTaxiLogList(TEST_CSV.getName(), SEPARATOR, COLUMNCOUNT, cellHelper);		
+		assertTrue("Result size: 10", result.size() == 10);	
 		
-		
-		assertTrue("Result size: 10", result.size() == 10);
-		
-		
-		
-		
-		
-	}*/
+	}
 }

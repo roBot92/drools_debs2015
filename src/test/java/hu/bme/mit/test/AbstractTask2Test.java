@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
+import org.drools.core.base.ValueType.BigDecimalValueType;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -206,79 +207,125 @@ public abstract class AbstractTask2Test {
 	}
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testOverFlowingAndAging() {
-		List<TaxiLog> tlogs = Arrays.asList(
-				// 20-19-18...
-				setUpTaxilog(cells.get(0), cells.get(10), BigDecimal.TEN, BigDecimal.TEN, "1"),
-				setUpTaxilog(cells.get(1), cells.get(9), BigDecimal.valueOf(9), BigDecimal.TEN, "2"),
-				setUpTaxilog(cells.get(2), cells.get(8), BigDecimal.valueOf(8), BigDecimal.TEN, "3"),
-				setUpTaxilog(cells.get(3), cells.get(7), BigDecimal.valueOf(7), BigDecimal.TEN, "4"),
-				setUpTaxilog(cells.get(4), cells.get(6), BigDecimal.valueOf(6), BigDecimal.TEN, "5"),
-				setUpTaxilog(cells.get(5), cells.get(5), BigDecimal.valueOf(5), BigDecimal.TEN, "6"),
-				setUpTaxilog(cells.get(6), cells.get(4), BigDecimal.valueOf(4), BigDecimal.TEN, "7"),
-				setUpTaxilog(cells.get(7), cells.get(3), BigDecimal.valueOf(3), BigDecimal.TEN, "8"),
-				setUpTaxilog(cells.get(8), cells.get(2), BigDecimal.valueOf(2), BigDecimal.TEN, "9"),
-				setUpTaxilog(cells.get(9), cells.get(1), BigDecimal.ONE, BigDecimal.TEN, "10"),
-				setUpTaxilog(cells.get(10), cells.get(0), BigDecimal.ZERO, BigDecimal.TEN, "11"));
-
-		List<AreaWithProfit> areaList = new ArrayList<AreaWithProfit>();
+	public void testTaxiCountChangingAfter30Minutes() {
+		TaxiLog oldTlog1 = setUpTaxilog(cells.get(1), cells.get(0), BigDecimal.ONE, BigDecimal.ONE, "1");		
 		rollPseudoClock(0);
-		for (int i = 0; i < tlogs.size(); i++) {
-			tlogs.get(i).setDropoff_datetime(calendar.getTime());
-			insertTaxiLogs(Arrays.asList(tlogs.get(i)));
-			fireRules();
-			if(i < tlogs.size() - 1){
-				rollPseudoClock(60*1000);
-			}
-			
-			AreaWithProfit area = new AreaWithProfit(tlogs.get(i).getPickup_cell(), BigDecimal.valueOf(20 - i),
-					tlogs.get(i).getDropoff_datetime());
-			areaList.add(area);
-
-		}
+		insertTaxiLogs(Arrays.asList(oldTlog1));
+		fireRules();
+		assertTrue("1", toplist.size() == 1 && toplist.get(0).getMedianProfitIndex().compareTo(BigDecimal.valueOf(2)) == 0);
 		
-		// Ez kifejezetten gyönyörû, de mivel az adott cellára beérkezõ taxi is
-		// frissíti a cellát, ez fog történni.
-		for (int i = -5; i < tlogs.size() - 5; i++) {
-			areaList.get(i + 5).setLastInserted(calendar.getTime());
-			calendar.add(Calendar.MINUTE,(i < 0 ? -1 : 1));
-		}
-
-		// check 0-9
-		for (int i = 0; i < 10; i++) {
-			assertTrue("check" + i, areaList.get(i).valueEquals(toplist.get(i)));
-		}
-
-	
-		rollPseudoClock(4 * 60 * 1000);
+		//+1 minutes
+		rollPseudoClock(60*1000);
+		TaxiLog oldTlog2 = setUpTaxilog(cells.get(1), cells.get(0), BigDecimal.ONE, BigDecimal.ONE, "2");
+		TaxiLog oldTlog3 = setUpTaxilog(cells.get(1), cells.get(0), BigDecimal.ONE, BigDecimal.ONE, "3");
+		oldTlog2.setDropoff_datetime(calendar.getTime());
+		oldTlog3.setDropoff_datetime(calendar.getTime());
+		
+		insertTaxiLogs(Arrays.asList(oldTlog2,oldTlog3));
+		fireRules();
+		assertTrue("2", toplist.size() == 1 && toplist.get(0).getMedianProfitIndex().compareTo(BigDecimal.valueOf(2)) == 0);
+		
+		//+20 min
+		rollPseudoClock(20*60*1000);
 		insertTaxiLogs(Collections.emptyList());
 		fireRules();
-
-		// check 10-19
-		for (int i = 0; i < 10; i++) {
-			assertTrue("check" + (10 + i), areaList.get(i).valueEquals(toplist.get(i)));
-		}
-
-	
+		
+		assertTrue("3", toplist.size() == 0);
+		
+		TaxiLog newTlog = setUpTaxilog(cells.get(0), cells.get(1), BigDecimal.TEN, BigDecimal.valueOf(2), "4");
+		newTlog.setDropoff_datetime(calendar.getTime());
+		rollPseudoClock(0);
+		insertTaxiLogs(Arrays.asList(newTlog));
+		fireRules();
+		
+		AreaWithProfit area = new AreaWithProfit(cells.get(0), BigDecimal.valueOf(4), newTlog.getDropoff_datetime());
+		//A három korábban beillesztett miatt a medián profitindexe 12/3 lesz.
+		assertTrue("4",toplist.size() == 1 && toplist.get(0).valueEquals(area));
+		
+		//+9 min
+		rollPseudoClock(9*60*1000);
+		insertTaxiLogs(Collections.emptyList());
+		fireRules();
+		//A helyzet itt még változatlan
+		assertTrue("4",toplist.size() == 1 && toplist.get(0).valueEquals(area));
+		
+		//+1 sec itt már kiesett az elsõ fuvar a területrõl.
 		rollPseudoClock(1000);
 		insertTaxiLogs(Collections.emptyList());
 		fireRules();
-
-		// check 20-29
-		for (int i = 0; i < 10; i++) {
-			assertTrue("check" + (20 + i), areaList.get(i + 1).valueEquals(toplist.get(i)));
-		}
-
-	/*	for (int i = 0; i < 10; i++) {
-			clock.advanceTime(1, TimeUnit.MINUTES);
-			kSession.insert(new Tick(clock.getCurrentTime(), System.currentTimeMillis()));
-			kSession.fireAllRules();
-			for (int j = 0; j < toplist.size(); j++) {
-				assertTrue("check" + (30 + (i * 10 + j)),
-						areaList.get(j + i+2).valueEquals(toplist.get(j)) && toplist.size() == 9 - i);
-			}
-		}*/
-
+		area.setMedianProfitIndex(BigDecimal.valueOf(6));
+		assertTrue("5",toplist.size() == 1 && toplist.get(0).valueEquals(area));
+		
+		//+1 min itt már kiesett a másik kettõ is.
+		rollPseudoClock(60*1000);
+		insertTaxiLogs(Collections.emptyList());
+		fireRules();
+		area.setMedianProfitIndex(BigDecimal.valueOf(12));
+		assertTrue("6",toplist.size() == 1 && toplist.get(0).valueEquals(area) && toplist.get(0).getCountOfTaxes() == 0);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testInsertionAndDeletionAtTheSameTimeWithoutOverlap(){
+		TaxiLog tlog1 = setUpTaxilog(cells.get(0), cells.get(1), BigDecimal.TEN, BigDecimal.TEN, "1");
+		AreaWithProfit area = new AreaWithProfit(tlog1.getPickup_cell(),BigDecimal.valueOf(20), calendar.getTime()); 
+		rollPseudoClock(0);
+		insertTaxiLogs(Arrays.asList(tlog1));
+		fireRules();
+		assertTrue("1", toplist.size() == 1 && toplist.get(0).valueEquals(area));
+		
+		//+15 min
+		rollPseudoClock(15*60*1000);
+		insertTaxiLogs(Collections.emptyList());
+		fireRules();
+		assertTrue("2", toplist.size() == 1 && toplist.get(0).valueEquals(area));
+		
+		//+1 sec
+		TaxiLog tlog2 = setUpTaxilog(cells.get(0), cells.get(1), BigDecimal.ONE, BigDecimal.ONE, "2");
+		rollPseudoClock(1000);
+		tlog2.setDropoff_datetime(calendar.getTime());
+		insertTaxiLogs(Arrays.asList(tlog2));
+		fireRules();
+		
+		area.setLastInserted(calendar.getTime());
+		area.setMedianProfitIndex(BigDecimal.valueOf(2));
+		assertTrue("3", toplist.size() == 1 && toplist.get(0).valueEquals(area));
+		
+		
+		
+	}
+	@Test
+	public void testInsertionAndDeletionAtTheSameTimeWithOverlap(){
+		TaxiLog tlog1 = setUpTaxilog(cells.get(0), cells.get(1), BigDecimal.ONE, BigDecimal.ONE, "1");
+		rollPseudoClock(0);
+		AreaWithProfit area = new AreaWithProfit(tlog1.getPickup_cell(),BigDecimal.valueOf(2), calendar.getTime()); 		
+		insertTaxiLogs(Arrays.asList(tlog1));
+		fireRules();
+		assertTrue("1", toplist.size() == 1 && toplist.get(0).valueEquals(area));
+		
+		//+15 min
+		rollPseudoClock(15*60*1000);
+		TaxiLog tlog2 = setUpTaxilog(cells.get(0), cells.get(1), BigDecimal.TEN, BigDecimal.TEN, "2");
+		tlog2.setDropoff_datetime(calendar.getTime());
+		insertTaxiLogs(Arrays.asList(tlog2));
+		fireRules();
+		area.setLastInserted(calendar.getTime());
+		area.setMedianProfitIndex(BigDecimal.valueOf(11));
+		assertTrue("2", toplist.size() == 1 && toplist.get(0).valueEquals(area));
+		
+		//+1 sec
+		TaxiLog tlog3 = setUpTaxilog(cells.get(0), cells.get(1), BigDecimal.valueOf(5), BigDecimal.valueOf(5), "3");
+		rollPseudoClock(1000);
+		tlog3.setDropoff_datetime(calendar.getTime());
+		insertTaxiLogs(Arrays.asList(tlog3));
+		fireRules();
+		
+		area.setLastInserted(calendar.getTime());
+		area.setMedianProfitIndex(BigDecimal.valueOf(15));
+		assertTrue("3", toplist.size() == 1 && toplist.get(0).valueEquals(area));
+		
+		
+		
 	}
 
 
